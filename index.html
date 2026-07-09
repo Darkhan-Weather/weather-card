@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html lang="mn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>УС ЦАГ УУР, ОРЧНЫ ШИНЖИЛГЭЭНИЙ ТӨВ</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Nunito',Arial,sans-serif;background:#e8f0f8;min-height:100vh;color:#1a2535}
+:root{--pal-bg1:#0d2459;--pal-bg2:#1a4a8a;--pal-accent:#ffd84d;--pal-bar1:#0a1e4a;--pal-bar2:#1a4a8a;}
+
+/* ── APP HEADER ── */
+.app-header{
+  background:linear-gradient(135deg,#0a1e4a,#1a4a8a);
+  padding:18px 24px;
+  display:flex;align-items:center;gap:18px;
+  box-shadow:0 3px 16px rgba(0,0,0,0.2);
+}
+.app-header-logo{
+  width:64px;height:64px;border-radius:50%;
+  background:#fff;border:3px solid rgba(255,255,255,0.8);
+  display:flex;align-items:center;justify-content:center;
+  overflow:hidden;flex-shrink:0;
+  box-shadow:0 3px 12px rgba(0,0,0,0.25);
+}
+.app-header-logo img{width:60px;height:60px;object-fit:contain;padding:4px}
+.app-header-title{color:#fff}
+.app-header-title h1{font-size:18px;font-weight:900;letter-spacing:.5px;line-height:1.2}
+.app-header-title p{font-size:12px;color:rgba(255,255,255,.7);font-weight:600;margin-top:2px}
+
+/* ── EDITOR ── */
+.editor{max-width:700px;margin:0 auto;padding:16px 14px}
+.card{background:#fff;border-radius:12px;border:1px solid #d8e4f0;padding:16px;margin-bottom:10px;box-shadow:0 2px 12px rgba(26,95,165,.07)}
+.card-title{font-size:13px;font-weight:800;color:#1a2535;margin-bottom:12px;display:flex;align-items:center;gap:6px}
+label{font-size:11px;font-weight:700;color:#6b7fa0;display:block;margin-bottom:3px;text-transform:uppercase;letter-spacing:.4px}
+input[type=text],input[type=number],select{width:100%;padding:7px 10px;border:1.5px solid #d8e4f0;border-radius:8px;font-size:13px;font-family:'Nunito',Arial,sans-serif;background:#fff;color:#1a2535;outline:none;transition:border .15s}
+input:focus,select:focus{border-color:#1a5fa5}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.g4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:8px}
+.btn-p{background:linear-gradient(135deg,#1a5fa5,#0d3d6e);color:#fff;border:none;padding:12px 24px;border-radius:10px;font-size:14px;cursor:pointer;font-family:'Nunito',Arial,sans-serif;font-weight:800;box-shadow:0 3px 12px rgba(26,95,165,.3);width:100%;transition:all .15s}
+.btn-p:hover{transform:translateY(-1px)}
+.btn-s{background:#fff;color:#1a2535;border:1.5px solid #d8e4f0;padding:6px 12px;border-radius:8px;font-size:11px;cursor:pointer;font-family:'Nunito',Arial,sans-serif;font-weight:700;transition:all .15s}
+.btn-s:hover{background:#dceefb;border-color:#1a5fa5}
+.btn-d{background:#fff;color:#c0392b;border:1.5px solid #e8b4b4;padding:4px 10px;border-radius:7px;font-size:11px;cursor:pointer;font-family:'Nunito',Arial,sans-serif;font-weight:700}
+.act-bar{display:flex;gap:12px;margin-top:16px;flex-wrap:wrap}
+.act-btn{display:flex;align-items:center;justify-content:center;gap:8px;font-size:15px;padding:13px 28px;border-radius:14px;cursor:pointer;border:none;font-family:'Nunito',Arial,sans-serif;font-weight:800;transition:all .2s;flex:1;min-width:160px}
+.act-btn-palette{background:linear-gradient(135deg,#6c5ce7,#a29bfe);color:#fff;box-shadow:0 4px 16px rgba(108,92,231,0.35)}
+.act-btn-palette:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(108,92,231,0.5)}
+.act-btn-export{background:linear-gradient(135deg,#0984e3,#74b9ff);color:#fff;box-shadow:0 4px 16px rgba(9,132,227,0.35)}
+.act-btn-export:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(9,132,227,0.5)}
+.act-btn:hover{background:#dceefb;border-color:#1a5fa5;color:#1a5fa5}
+.act-btn svg{width:14px;height:14px}
+.cond-row{display:grid;grid-template-columns:42px 54px 1fr auto;gap:7px;align-items:center;background:#f4f8fd;border-radius:9px;padding:8px 10px;margin-bottom:6px;border:1px solid #e0eaf0}
+.cond-remove{background:none;border:none;color:#c0392b;cursor:pointer;font-size:16px;padding:0 4px}
+.soum-img-btn{display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 10px;border-radius:10px;border:1.5px solid #d8e4f0;background:#f4f8fd;cursor:pointer;font-family:'Nunito',Arial,sans-serif;font-size:10px;font-weight:700;color:#1a2535;transition:all .15s}
+.soum-img-btn:hover{background:#dceefb;border-color:#1a5fa5}
+.soum-img-btn.active{background:#1a5fa5;border-color:#1a5fa5;color:#fff}
+
+/* ══ INSTAGRAM 1080×1080 ══ */
+.ig-wrap{width:min(600px,94vw);aspect-ratio:1/1;margin:20px auto 0;position:relative}
+.ig-card{
+  width:1080px;height:1080px;
+  transform-origin:top left;
+  position:relative;overflow:hidden;
+  background:linear-gradient(160deg,var(--pal-bg1) 0%,var(--pal-bg2) 100%);
+  font-family:'Nunito',Arial,sans-serif;
+}
+.ig-bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.25;display:none}
+
+/* TOP BAR */
+.ig-topbar{
+  position:absolute;top:0;left:0;right:0;height:112px;
+  background:linear-gradient(135deg,var(--pal-bg1) 0%,var(--pal-bg2) 100%);
+  display:flex;align-items:center;padding:0 38px;z-index:10;gap:20px;
+  box-shadow:0 4px 28px rgba(0,0,0,0.3);
+}
+.ig-logo{
+  width:90px;height:90px;border-radius:50%;
+  background:#fff;
+  border:4px solid rgba(255,255,255,0.95);
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 4px 24px rgba(0,0,0,0.35),0 0 0 2px rgba(255,255,255,0.2);
+  flex-shrink:0;overflow:hidden;
+}
+.ig-logo img{width:86px;height:86px;object-fit:contain;padding:6px}
+.ig-title-block{flex:1}
+.ig-maintitle{font-size:36px;font-weight:900;color:#fff;letter-spacing:1.5px;text-shadow:0 2px 14px rgba(0,0,0,.5);line-height:1.05}
+.ig-subtitle{font-size:15px;color:rgba(255,255,255,.8);font-weight:700;margin-top:7px}
+.ig-subtitle span{color:var(--pal-accent);font-weight:800}
+
+/* BODY */
+.ig-body{
+  position:absolute;top:112px;left:0;right:0;bottom:90px;
+  display:grid;grid-template-columns:300px 1fr;
+}
+
+/* LEFT */
+.ig-left{
+  position:relative;display:flex;flex-direction:column;
+  padding:24px 28px;z-index:5;justify-content:flex-start;align-items:center;gap:16px;
+}
+
+.ig-glass-date{
+  width:100%;text-align:center;
+  background:rgba(15,35,75,0.60);
+  border:1.5px solid rgba(255,255,255,0.25);
+  border-radius:18px;padding:16px 20px 14px;
+  box-shadow:0 6px 28px rgba(0,0,0,0.35),inset 0 1px 0 rgba(255,255,255,0.15);
+}
+.ig-month{font-size:15px;font-weight:700;color:rgba(255,255,255,.75);letter-spacing:2px;text-transform:uppercase}
+.ig-day{font-size:108px;font-weight:900;color:#fff;line-height:.92;text-shadow:0 6px 30px rgba(0,0,0,.5)}
+.ig-weekday{font-size:18px;font-weight:900;color:var(--pal-accent);letter-spacing:2px;text-transform:uppercase;margin-top:10px}
+.ig-temp{font-size:46px;font-weight:900;color:var(--pal-accent);text-shadow:0 3px 16px rgba(0,0,0,.4);line-height:1.1;text-align:center;width:100%;background:rgba(15,35,75,0.55);border:1.5px solid rgba(255,255,255,0.25);border-radius:18px;padding:14px 16px;box-shadow:0 6px 28px rgba(0,0,0,0.35),inset 0 1px 0 rgba(255,255,255,0.15);}
+
+/* RIGHT */
+.ig-right{
+  position:relative;z-index:5;
+  background:rgba(255,255,255,0.91);
+  backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);
+  border-left:1.5px solid rgba(255,255,255,0.5);
+  box-shadow:-4px 0 20px rgba(0,0,0,0.10);
+  display:flex;flex-direction:column;
+  padding:20px 24px 20px;overflow:hidden;
+}
+.ig-soum-photo{
+  width:100%;height:220px;object-fit:cover;
+  border-radius:12px;border:2px solid rgba(26,95,165,0.12);
+  margin-bottom:16px;
+  filter:brightness(1.05) contrast(1.03) saturate(1.05);
+  box-shadow:0 4px 16px rgba(0,0,0,0.1);
+  display:none;flex-shrink:0;
+}
+.ig-region-badge{
+  display:inline-block;
+  background:linear-gradient(135deg,var(--pal-bg1),var(--pal-bg2));
+  color:#fff;font-size:15px;font-weight:900;
+  padding:7px 18px;border-radius:28px;margin-top:4px;margin-bottom:16px;
+  box-shadow:0 3px 12px rgba(13,36,89,0.2);
+  border:1.5px solid rgba(255,255,255,0.12);
+  align-self:flex-start;
+}
+.ig-cond-list{display:flex;flex-direction:column;gap:16px;flex:1;}
+.ig-cond-item{display:flex;align-items:flex-start;gap:10px}
+.ig-cond-bubble{
+  width:52px;height:52px;border-radius:50%;
+  background:linear-gradient(135deg,rgba(26,95,165,0.11),rgba(26,95,165,0.04));
+  border:1.5px solid rgba(26,95,165,0.16);
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+}
+.ig-cond-bubble svg{width:28px;height:28px}
+.ig-cond-text{font-size:17px;font-weight:700;color:#1a2535;line-height:1.5;padding-top:4px}
+.ig-cond-text b{color:#1a5fa5;font-weight:800}
+.ig-cond-text .hot{color:#d45c00;font-weight:800}
+
+/* Contact info block */
+.ig-contact{
+  margin-top:auto;
+  padding:10px 14px;
+  background:rgba(13,36,89,0.06);
+  border-radius:10px;
+  border-left:3px solid var(--pal-bg2);
+  flex-shrink:0;
+}
+.ig-contact-row{display:flex;align-items:center;gap:6px;font-size:12px;color:#1a2535;font-weight:600;line-height:1.6}
+.ig-contact-row span{color:#1a5fa5;font-weight:700}
+
+
+
+
+/* BOTTOM BAR */
+.ig-bottom-inner-pad{padding:0 20px;}
+.ig-bottom{
+  position:absolute;bottom:0;left:0;right:0;height:90px;
+  background:linear-gradient(135deg,var(--pal-bar1),var(--pal-bar2));
+  display:grid;grid-template-columns:1fr 1fr;
+  align-items:center;z-index:10;padding:0 38px;gap:16px;
+}
+.ig-sun-block{display:flex;align-items:center;gap:12px;color:#fff}
+.ig-sun-icon{width:42px;height:42px;flex-shrink:0;display:flex;align-items:center;justify-content:center}
+.ig-sun-text{font-size:13px;font-weight:600;line-height:1.3;opacity:.85}
+.ig-sun-text strong{font-size:22px;font-weight:900;display:block;opacity:1;color:#fff}
+.ig-alert-block{
+  display:flex;align-items:center;gap:10px;
+  background:rgba(255,180,0,0.12);
+  border:1.5px solid rgba(255,216,77,0.45);
+  border-radius:12px;padding:10px 16px;
+}
+.ig-alert-text{color:#fff;font-size:13px;font-weight:700;line-height:1.3}
+.ig-alert-text strong{color:var(--pal-accent);font-size:11px;letter-spacing:.5px;display:block}
+</style>
+</head>
+<body>
+
+<!-- App header -->
+<div class="app-header">
+  <div class="app-header-logo">
+    <img src="assets/logo.png" alt="УЦУОШТ">
+  </div>
+  <div class="app-header-title">
+    <h1>УС ЦАГ УУР, ОРЧНЫ ШИНЖИЛГЭЭНИЙ ТӨВ</h1>
+    <p>Дархан-Уул аймгийн УЦУОШТ — Цаг агаарын мэдээ бэлтгэх систем</p>
+  </div>
+</div>
+
+<div class="editor">
+
+  <div class="card">
+    <div class="card-title">📅 Огноо & Байршил</div>
+    <div class="g4">
+      <div><label>Сар</label><input type="text" id="o_month" placeholder="5-р сарын"></div>
+      <div><label>Өдөр</label><input type="number" id="o_day" placeholder="21"></div>
+      <div><label>Гараг</label><input type="text" id="o_weekday" placeholder="ПҮРЭВ ГАРАГ"></div>
+      <div><label>Жилийн дугаар</label><input type="text" id="o_year" placeholder="2026 оны 5-р сарын 21-ны"></div>
+    </div>
+    <div class="g2" style="margin-top:10px">
+      <div>
+        <label>Байршил / Сум</label>
+        <div style="display:flex;gap:6px;align-items:center">
+          <input type="text" id="o_region" placeholder="Дархан сум орчмоор" style="flex:1">
+          <button class="btn-s" onclick="cycleSoum()" style="padding:7px 10px">🔄</button>
+        </div>
+        <div style="margin-top:6px;display:flex;flex-wrap:wrap;gap:5px" id="soumBtns"></div>
+      </div>
+      <div><label>Температур</label><input type="text" id="o_temp" placeholder="+16...+18"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">⚠️ Анхааруулга</div>
+    <input type="text" id="o_alert" placeholder="Хоосон үлдээвэл харагдахгүй">
+  </div>
+
+  <div class="card">
+    <div class="card-title">🏙️ Зураг сонгох
+      <label style="margin-left:auto;margin-bottom:0;cursor:pointer;background:#dceefb;color:#1a5fa5;padding:5px 12px;border-radius:8px;font-size:11px;display:inline-block">
+        📷 Өөр зураг
+        <input type="file" id="o_cityimg" accept="image/*" onchange="previewCityImg(this)" style="display:none">
+      </label>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px" id="soumImgBtns"></div>
+    <div id="o_imgpreview" style="display:none;align-items:center;gap:10px">
+      <img id="o_imgthumb" style="height:55px;border-radius:8px;border:2px solid #d8e4f0;object-fit:cover" alt="">
+      <button class="btn-d" onclick="clearCityImg()">Устгах</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">📋 Нөхцлийн жагсаалт
+      <button class="btn-s" onclick="addCond()" style="margin-left:auto">+ Мөр нэмэх</button>
+    </div>
+    <div id="condRows"></div>
+  </div>
+
+  <button class="btn-p" onclick="generate1day()">🌤️ Мэдээ үүсгэх</button>
+
+  <div id="result1day" style="display:none;margin-top:20px">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+      <span id="palLbl" style="font-size:11px;font-weight:700;color:#6b7fa0;opacity:0;transition:opacity .6s;background:#f4f8fd;padding:4px 14px;border-radius:20px;border:1.5px solid #d8e4f0"></span>
+    </div>
+
+    <div class="ig-wrap" id="igWrap">
+      <div class="ig-card" id="exportTarget1">
+
+        <img id="o_bgimg" class="ig-bg" src="" alt="">
+
+        <!-- TOP BAR -->
+        <div class="ig-topbar">
+          <div class="ig-logo">
+            <img src="assets/logo.png" alt="УЦУОШТ">
+          </div>
+          <div class="ig-title-block">
+            <div class="ig-maintitle">ЦАГ АГААРЫН УРЬДЧИЛСАН МЭДЭЭ</div>
+            <div class="ig-subtitle" id="o_subtitleEl">— <span>08:00-20:00 цаг хүртэл</span></div>
+          </div>
+        </div>
+
+        <!-- BODY -->
+        <div class="ig-body">
+          <div class="ig-left">
+            <div>
+<div class="ig-glass-date">
+                <div class="ig-month" id="o_monthEl">—</div>
+                <div class="ig-day" id="o_dayEl">—</div>
+                <div class="ig-weekday" id="o_weekdayEl">—</div>
+              </div>
+            </div>
+            <div class="ig-temp" id="o_tempEl">—</div>
+          </div>
+          <div class="ig-right">
+            <img id="o_soumPhoto" class="ig-soum-photo" src="" alt="">
+            <div class="ig-region-badge" id="o_regionEl">—</div>
+            <div class="ig-cond-list" id="o_condListEl"></div>
+            <div class="ig-contact">
+              <div class="ig-contact-row">📍 <span>Хаяг:</span> Дархан-Уул аймаг, Дархан сум 5-р баг УЦУОШТөв</div>
+              <div class="ig-contact-row">📞 <span>Утас:</span> 70374161</div>
+              <div class="ig-contact-row">✉️ <span>Мэйл:</span> info@darkhan-uul.namem.gov.mn</div>
+              <div class="ig-contact-row">🌐 <span>Веб:</span> darkhan-uul.weather.gov.mn</div>
+            </div>
+          </div>
+        </div>
+
+
+
+        <!-- BOTTOM BAR -->
+        <div class="ig-bottom">
+          <div class="ig-sun-block">
+            <div class="ig-sun-icon">
+              <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
+                <circle cx="20" cy="20" r="9" fill="#ffd84d" opacity=".95"/>
+                <line x1="20" y1="2" x2="20" y2="8" stroke="#ffd84d" stroke-width="2.5" stroke-linecap="round"/>
+                <line x1="20" y1="32" x2="20" y2="38" stroke="#ffd84d" stroke-width="2.5" stroke-linecap="round"/>
+                <line x1="2" y1="20" x2="8" y2="20" stroke="#ffd84d" stroke-width="2.5" stroke-linecap="round"/>
+                <line x1="32" y1="20" x2="38" y2="20" stroke="#ffd84d" stroke-width="2.5" stroke-linecap="round"/>
+                <line x1="6.5" y1="6.5" x2="11" y2="11" stroke="#ffd84d" stroke-width="2" stroke-linecap="round"/>
+                <line x1="29" y1="29" x2="33.5" y2="33.5" stroke="#ffd84d" stroke-width="2" stroke-linecap="round"/>
+                <line x1="33.5" y1="6.5" x2="29" y2="11" stroke="#ffd84d" stroke-width="2" stroke-linecap="round"/>
+                <line x1="11" y1="29" x2="6.5" y2="33.5" stroke="#ffd84d" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+            </div>
+            <div class="ig-sun-text">Нар мандах<strong id="o_sunriseEl">—</strong></div>
+          </div>
+          <div id="o_bottomRight">
+            <!-- alert эсвэл нар жаргах — JS-ээр солигдоно -->
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="act-bar">
+      <button class="act-btn act-btn-palette" onclick="applyRandomPalette()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M8 12a4 4 0 0 1 8 0c0 2-2 4-4 6-2-2-4-4-4-6z"/><circle cx="12" cy="9" r="1" fill="currentColor"/></svg>
+        🎨 Өнгө солих
+      </button>
+      <button class="act-btn act-btn-export" onclick="doInstagramPNG()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        📥 Зураг татах
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+const MN_MONTHS=['1-р сарын','2-р сарын','3-р сарын','4-р сарын','5-р сарын','6-р сарын','7-р сарын','8-р сарын','9-р сарын','10-р сарын','11-р сарын','12-р сарын'];
+const MN_WEEKDAYS=['НЯМ ГАРАГ','ДАВАА ГАРАГ','МЯГМАР ГАРАГ','ЛХАГВА ГАРАГ','ПҮРЭВ ГАРАГ','БААСАН ГАРАГ','БЯМБА ГАРАГ'];
+
+
+
+function scaleCard(){
+  const wrap=document.getElementById('igWrap');if(!wrap||wrap.style.display==='none')return;
+  const w=wrap.offsetWidth;const scale=w/1080;
+  document.querySelector('.ig-card').style.transform=`scale(${scale})`;
+  wrap.style.height=(1080*scale)+'px';
+}
+window.addEventListener('resize',scaleCard);
+
+// Sun calc
+const SOUM_COORDS={
+  'Дархан':{lat:49.4833,lng:105.9667},
+  'Орхон':{lat:49.4,lng:104.9},
+  'Хонгор':{lat:49.25,lng:105.55},
+  'Шарын гол':{lat:48.75,lng:106.25},
+};
+let _sunCoords={lat:49.4833,lng:105.9667};
+
+function calcSun(date,lat,lng){
+  const rad=Math.PI/180;
+  const N=Math.floor((date-new Date(date.getFullYear(),0,0))/86400000);
+  const B=(360/365)*(N-81)*rad;
+  const EoT=9.87*Math.sin(2*B)-7.53*Math.cos(B)-1.5*Math.sin(B);
+  const TC=4*(lng-105)+EoT;
+  const decl=23.45*Math.sin(rad*(360/365)*(N-81))*rad;
+  const cosH=(-Math.sin(-0.8333*rad)-Math.sin(lat*rad)*Math.sin(decl))/(Math.cos(lat*rad)*Math.cos(decl));
+  if(Math.abs(cosH)>1)return{rise:'—',set:'—'};
+  const H=Math.acos(cosH)/rad;
+  function fmt(m){m=((m%1440)+1440)%1440;const h=Math.floor(m/60);const mn=Math.floor(m%60);return String(h).padStart(2,'0')+':'+String(mn).padStart(2,'0');}
+  return{rise:fmt(720-4*(lng+H)-TC+480),set:fmt(720-4*(lng-H)-TC+480)};
+}
+
+function updateBottomRight(alertTxt, sunsetTime){
+  const br=document.getElementById('o_bottomRight');
+  if(alertTxt){
+    br.innerHTML=`<div class="ig-alert-block">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" style="flex-shrink:0">
+        <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" stroke="#ffd84d" stroke-width="2" fill="rgba(255,216,77,0.15)"/>
+        <line x1="12" y1="9" x2="12" y2="13" stroke="#ffd84d" stroke-width="2" stroke-linecap="round"/>
+        <circle cx="12" cy="17" r="1" fill="#ffd84d"/>
+      </svg>
+      <div class="ig-alert-text"><strong>АНХААРУУЛГА</strong>${alertTxt}</div>
+    </div>`;
+  } else {
+    br.innerHTML=`<div class="ig-sun-block">
+      <div class="ig-sun-icon">
+        <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
+          <path d="M6 32 Q20 14 34 32" stroke="#ffb347" stroke-width="3" fill="none" stroke-linecap="round"/>
+          <circle cx="20" cy="30" r="6" fill="#ffb347" opacity=".85"/>
+          <line x1="4" y1="36" x2="36" y2="36" stroke="#ffb347" stroke-width="2.5" stroke-linecap="round" opacity=".6"/>
+        </svg>
+      </div>
+      <div class="ig-sun-text">Нар жаргах<strong>${sunsetTime}</strong></div>
+    </div>`;
+  }
+}
+
+// Soum data
+const SOUMS=[
+  {name:'Дархан',label:'Дархан сум орчмоор',emoji:'🏭',img:'assets/darkhan.jpg'},
+  {name:'Орхон',label:'Орхон сум орчмоор',emoji:'🏘️',img:'assets/orkhon.jpg'},
+  {name:'Хонгор',label:'Хонгор сум орчмоор',emoji:'🌄',img:'assets/khongor.jpg'},
+  {name:'Шарын гол',label:'Шарын гол сум орчмоор',emoji:'🏞️',img:'assets/sharyngol.jpg'},
+];
+let currentSoumIdx=0;
+let cityImgData=null;
+
+function buildSoumBtns(){
+  const wrap=document.getElementById('soumBtns');if(!wrap)return;wrap.innerHTML='';
+  SOUMS.forEach((s,i)=>{
+    const btn=document.createElement('button');btn.className='btn-s';
+    btn.style.cssText='font-size:10px;padding:3px 9px';btn.textContent=s.name;
+    btn.onclick=()=>{currentSoumIdx=i;document.getElementById('o_region').value=s.label;};
+    wrap.appendChild(btn);
+  });
+}
+
+function buildSoumImgBtns(){
+  const wrap=document.getElementById('soumImgBtns');if(!wrap)return;wrap.innerHTML='';
+  SOUMS.forEach((s,i)=>{
+    const btn=document.createElement('button');btn.className='soum-img-btn';btn.title=s.name;
+    btn.onclick=()=>selectSoumImg(i);
+    btn.innerHTML=s.img?`<img src="${s.img}" style="width:56px;height:38px;object-fit:cover;border-radius:6px"><span>${s.name}</span>`:`<span style="font-size:18px">${s.emoji}</span><span>${s.name}</span>`;
+    wrap.appendChild(btn);
+  });
+}
+
+function selectSoumImg(idx){
+  document.querySelectorAll('.soum-img-btn').forEach((b,i)=>b.classList.toggle('active',i===idx));
+  const s=SOUMS[idx];cityImgData=s.img||null;
+  const sp=document.getElementById('o_soumPhoto');
+  const bg=document.getElementById('o_bgimg');
+  if(cityImgData){
+    sp.src=cityImgData;sp.style.display='block';
+    bg.src=cityImgData;bg.style.display='block';
+    document.getElementById('o_imgthumb').src=cityImgData;
+    document.getElementById('o_imgthumb').style.display='block';
+    document.getElementById('o_imgpreview').style.display='flex';
+  }
+  document.getElementById('o_region').value=s.label;
+  currentSoumIdx=idx;
+  const coord=SOUM_COORDS[s.name];if(coord)_sunCoords=coord;
+}
+
+function cycleSoum(){currentSoumIdx=(currentSoumIdx+1)%SOUMS.length;selectSoumImg(currentSoumIdx);}
+
+function previewCityImg(inp){
+  if(!inp.files[0])return;
+  const r=new FileReader();
+  r.onload=e=>{
+    cityImgData=e.target.result;
+    document.getElementById('o_imgthumb').src=cityImgData;
+    document.getElementById('o_imgthumb').style.display='block';
+    document.getElementById('o_imgpreview').style.display='flex';
+    document.querySelectorAll('.soum-img-btn').forEach(b=>b.classList.remove('active'));
+    document.getElementById('o_soumPhoto').src=cityImgData;
+    document.getElementById('o_soumPhoto').style.display='block';
+    document.getElementById('o_bgimg').src=cityImgData;
+    document.getElementById('o_bgimg').style.display='block';
+  };
+  r.readAsDataURL(inp.files[0]);
+}
+
+function clearCityImg(){
+  cityImgData=null;
+  ['o_imgthumb','o_soumPhoto','o_bgimg'].forEach(id=>{const el=document.getElementById(id);el.style.display='none';});
+  document.getElementById('o_imgpreview').style.display='none';
+  document.querySelectorAll('.soum-img-btn').forEach(b=>b.classList.remove('active'));
+}
+
+// Conditions
+let conditions=[
+  {icon:'⛅',text:'Солигдмол үүлтэй.'},
+  {icon:'🌧️',text:'Нийт нутгаар <b>бороо</b> орно.'},
+  {icon:'💨',text:'Салхи баруун хойноос секундэд <b class="hot">6-11 метр</b>.'},
+  {icon:'🌫️',text:'Зарим газраар борооны өмнө тур зуур ширгүүсэж <b class="hot">шороон шуурга</b> шуурна.'},
+  {icon:'🌡️',text:'Өдөртөө <b class="hot">+18...+23</b> градус дулаан байна.'},
+];
+
+const WSVG={
+  '⛅':`<svg width="24" height="24" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="9" r="4" fill="#f5c842"/><path d="M12 2v2M12 18v2M4.22 4.22l1.42 1.42M18.36 16.36l1.42 1.42M2 12h2M20 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" stroke="#f5a623" stroke-width="1.5" stroke-linecap="round"/><path d="M4 16a4 4 0 0 1 4-4h7a3 3 0 0 1 0 6H8a4 4 0 0 1-4-4z" fill="#dce8f8" stroke="#aac4e0" stroke-width="1"/></svg>`,
+  '🌧️':`<svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M4 12a4 4 0 0 1 4-4h8a3 3 0 0 1 0 6H8a4 4 0 0 1-4-4z" fill="#b8d0ee" stroke="#7aaad8" stroke-width="1"/><path d="M8 19l-1 3M12 19l-1 3M16 19l-1 3" stroke="#4488cc" stroke-width="1.8" stroke-linecap="round"/></svg>`,
+  '💨':`<svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M3 12h16a3 3 0 0 0 0-6 3 3 0 0 0-2.9 3.5" stroke="#7ab8d8" stroke-width="1.8" stroke-linecap="round"/><path d="M3 17h10a2.5 2.5 0 0 1 0 5 2.5 2.5 0 0 1-2.4-3" stroke="#7ab8d8" stroke-width="1.8" stroke-linecap="round"/></svg>`,
+  '🌫️':`<svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M3 8h18M3 12h14M3 16h10M3 20h6" stroke="#aab8c8" stroke-width="2" stroke-linecap="round"/></svg>`,
+  '🌡️':`<svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0z" fill="#ffb347" stroke="#e07820" stroke-width="1.2"/><circle cx="11.5" cy="19" r="2.5" fill="#e07820"/></svg>`,
+  '☀️':`<svg width="24" height="24" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="4.5" fill="#ffd84d" stroke="#f5a623" stroke-width="1"/><path d="M12 2v3M12 19v3M4.22 4.22l2.12 2.12M17.66 17.66l2.12 2.12M2 12h3M19 12h3M4.22 19.78l2.12-2.12M17.66 6.34l2.12-2.12" stroke="#f5a623" stroke-width="2" stroke-linecap="round"/></svg>`,
+  '❄️':`<svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M12 2v20M2 12h20M4.93 4.93l14.14 14.14M19.07 4.93L4.93 19.07" stroke="#7ab8e8" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="12" r="2" fill="#4a9fd8"/></svg>`,
+  '🌨️':`<svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M4 12a4 4 0 0 1 4-4h8a3 3 0 0 1 0 6H8a4 4 0 0 1-4-4z" fill="#dce8f8" stroke="#aac4e0" stroke-width="1"/><circle cx="9" cy="19" r="1.2" fill="#7ab8e8"/><circle cx="13" cy="21" r="1.2" fill="#7ab8e8"/><circle cx="17" cy="19" r="1.2" fill="#7ab8e8"/></svg>`,
+  '⛈️':`<svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M4 11a4 4 0 0 1 4-4h8a3 3 0 0 1 0 6H8a4 4 0 0 1-4-4z" fill="#9ab0d0" stroke="#6888b0" stroke-width="1"/><path d="M13 14l-3 5h4l-3 5" stroke="#f5c842" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
+  '🌦️':`<svg width="24" height="24" viewBox="0 0 24 24" fill="none"><circle cx="14" cy="7" r="3.5" fill="#ffd84d"/><path d="M4 14a4 4 0 0 1 4-4h7a3 3 0 0 1 0 6H8a4 4 0 0 1-4-4z" fill="#dce8f8" stroke="#aac4e0" stroke-width="1"/><path d="M8 20l-.5 2M11 20l-.5 2M14 20l-.5 2" stroke="#4488cc" stroke-width="1.5" stroke-linecap="round"/></svg>`,
+  '☁️':`<svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M3 14a5 5 0 0 1 5-5 5 5 0 0 1 4.9 4H14a4 4 0 0 1 0 8H8a5 5 0 0 1-5-5z" fill="#d0e0f0" stroke="#90b0d0" stroke-width="1.2"/></svg>`,
+};
+function getWIcon(icon){return WSVG[icon]||`<span style="font-size:20px">${icon}</span>`;}
+
+function buildCondRows(){
+  const cont=document.getElementById('condRows');cont.innerHTML='';
+  const iconKeys=Object.keys(WSVG);
+  conditions.forEach((c,i)=>{
+    const div=document.createElement('div');div.className='cond-row';
+    div.innerHTML=`
+      <div style="display:flex;align-items:center;justify-content:center;background:#f0f6ff;border-radius:10px;width:40px;height:40px;border:1.5px solid #d8e4f0;flex-shrink:0">${getWIcon(c.icon)}</div>
+      <select onchange="conditions[${i}].icon=this.value;buildCondRows()" style="width:52px;font-size:12px;padding:3px;border-radius:7px;border:1.5px solid #d8e4f0">
+        ${iconKeys.map(k=>`<option value="${k}" ${c.icon===k?'selected':''}>${k}</option>`).join('')}
+      </select>
+      <input type="text" value="${c.text.replace(/"/g,'&quot;')}" oninput="conditions[${i}].text=this.value" style="font-size:12px">
+      <button class="cond-remove" onclick="removeCond(${i})">✕</button>`;
+    cont.appendChild(div);
+  });
+}
+function addCond(){conditions.push({icon:'⛅',text:''});buildCondRows();}
+function removeCond(i){conditions.splice(i,1);buildCondRows();}
+function gv(id){return(document.getElementById(id)||{}).value||'';}
+
+// Palettes
+const CH_PALETTES=[
+  {bg1:'#0d2459',bg2:'#1255a0',accent:'#ffd84d',bar1:'#0d2459',bar2:'#1a4a8a',label:'Ocean Blue'},
+  {bg1:'#0b3d2e',bg2:'#1a6b4a',accent:'#a8e6cf',bar1:'#0b3d2e',bar2:'#145c3a',label:'Forest'},
+  {bg1:'#2d1b69',bg2:'#8e2de2',accent:'#ffd84d',bar1:'#2d1b69',bar2:'#6a0dad',label:'Sunset'},
+  {bg1:'#1a0533',bg2:'#4a1572',accent:'#e040fb',bar1:'#1a0533',bar2:'#3d0f66',label:'Midnight'},
+  {bg1:'#0c3547',bg2:'#1e6091',accent:'#48cae4',bar1:'#0c3547',bar2:'#1e6091',label:'Arctic'},
+  {bg1:'#3d0c02',bg2:'#9b2226',accent:'#ffd166',bar1:'#3d0c02',bar2:'#ae2012',label:'Ember'},
+  {bg1:'#1c1c2e',bg2:'#2d3561',accent:'#a8dadc',bar1:'#1c1c2e',bar2:'#2d3561',label:'Storm'},
+  {bg1:'#1b2c1a',bg2:'#2d5a27',accent:'#b5e48c',bar1:'#1b2c1a',bar2:'#2d5a27',label:'Moss'},
+  {bg1:'#03045e',bg2:'#0077b6',accent:'#90e0ef',bar1:'#03045e',bar2:'#0077b6',label:'Deep Sea'},
+  {bg1:'#2c2c54',bg2:'#474787',accent:'#ffb8b1',bar1:'#2c2c54',bar2:'#474787',label:'Dusk'},
+  {bg1:'#1a0000',bg2:'#7b2d00',accent:'#ff6b35',bar1:'#1a0000',bar2:'#7b2d00',label:'Volcano'},
+  {bg1:'#0a2e1a',bg2:'#155a35',accent:'#52b788',bar1:'#0a2e1a',bar2:'#155a35',label:'Pine'},
+  {bg1:'#1a1a2e',bg2:'#16213e',accent:'#e94560',bar1:'#1a1a2e',bar2:'#0f3460',label:'Crimson'},
+  {bg1:'#2b2d42',bg2:'#457b9d',accent:'#a8dadc',bar1:'#2b2d42',bar2:'#1d3557',label:'Slate'},
+  {bg1:'#370617',bg2:'#6a040f',accent:'#ffba08',bar1:'#370617',bar2:'#9d0208',label:'Fire'},
+];
+let _lastPalIdx=-1;
+function applyRandomPalette(){
+  let idx;
+  do{idx=Math.floor(Math.random()*CH_PALETTES.length);}while(idx===_lastPalIdx&&CH_PALETTES.length>1);
+  _lastPalIdx=idx;const p=CH_PALETTES[idx];
+  const rs=document.documentElement.style;
+  rs.setProperty('--pal-bg1',p.bg1);rs.setProperty('--pal-bg2',p.bg2);
+  rs.setProperty('--pal-accent',p.accent);rs.setProperty('--pal-bar1',p.bar1);rs.setProperty('--pal-bar2',p.bar2);
+  const lbl=document.getElementById('palLbl');
+  if(lbl){lbl.textContent='🎨 '+p.label;lbl.style.opacity='1';setTimeout(()=>{lbl.style.opacity='0';},2500);}
+}
+
+// Generate
+function generate1day(){
+  applyRandomPalette();
+  const yr=gv('o_year');
+  document.getElementById('o_subtitleEl').innerHTML=`${yr} <span>08:00-20:00 цаг хүртэл</span>`;
+  document.getElementById('o_monthEl').textContent=gv('o_month')||'—';
+  document.getElementById('o_dayEl').textContent=gv('o_day')||'—';
+  document.getElementById('o_weekdayEl').textContent=gv('o_weekday')||'—';
+  document.getElementById('o_tempEl').textContent=gv('o_temp')||'—';
+  document.getElementById('o_regionEl').textContent=gv('o_region')||'—';
+
+  // sync conditions from rows
+  document.querySelectorAll('#condRows .cond-row').forEach((row,i)=>{
+    const sel=row.querySelector('select');const inp=row.querySelector('input[type=text]');
+    if(sel&&conditions[i])conditions[i].icon=sel.value;
+    if(inp&&conditions[i])conditions[i].text=inp.value;
+  });
+
+  // cond list
+  document.getElementById('o_condListEl').innerHTML=conditions.map(c=>`
+    <div class="ig-cond-item">
+      <div class="ig-cond-bubble">${getWIcon(c.icon)}</div>
+      <div class="ig-cond-text">${c.text}</div>
+    </div>`).join('');
+
+  // sun times
+  const dayNum=parseInt(gv('o_day'))||new Date().getDate();
+  const mIdx=MN_MONTHS.indexOf(gv('o_month'));
+  const sunDate=new Date(new Date().getFullYear(),mIdx>=0?mIdx:new Date().getMonth(),dayNum);
+  const sun=calcSun(sunDate,_sunCoords.lat,_sunCoords.lng);
+  document.getElementById('o_sunriseEl').textContent=sun.rise;
+  updateBottomRight(gv('o_alert'),sun.set);
+
+  // city photos
+  const sp=document.getElementById('o_soumPhoto');
+  const bg=document.getElementById('o_bgimg');
+  if(cityImgData){sp.src=cityImgData;sp.style.display='block';bg.src=cityImgData;bg.style.display='block';}
+  else{sp.style.display='none';bg.style.display='none';}
+
+  document.getElementById('result1day').style.display='block';
+  setTimeout(()=>{scaleCard();document.getElementById('result1day').scrollIntoView({behavior:'smooth',block:'start'});},80);
+}
+
+// Export — full 1080×1080 without scaling
+function doInstagramPNG(){
+  const card=document.getElementById('exportTarget1');
+  const wrap=document.getElementById('igWrap');
+
+  // 1. Карт-г дэлгэцийн гадна render container-т хуулж байрлуулна
+  const container=document.createElement('div');
+  container.style.cssText='position:fixed;left:-1200px;top:0;width:1080px;height:1080px;overflow:visible;z-index:-1';
+  document.body.appendChild(container);
+
+  // 2. Карт-г clone хийж, transform-гүй бүтэн хэмжээгээр тавина
+  const clone=card.cloneNode(true);
+  clone.style.cssText='width:1080px;height:1080px;transform:none;position:relative;overflow:hidden';
+  container.appendChild(clone);
+
+  // 3. Зураг src-ийг шилжүүлнэ (clone дотор зургууд хоосон байж болно)
+  const origImgs=card.querySelectorAll('img');
+  const cloneImgs=clone.querySelectorAll('img');
+  origImgs.forEach((img,i)=>{ if(cloneImgs[i]) cloneImgs[i].src=img.src; });
+
+  setTimeout(()=>{
+    html2canvas(clone,{
+      scale:1,
+      useCORS:true,
+      allowTaint:true,
+      width:1080,
+      height:1080,
+      windowWidth:1080,
+      windowHeight:1080,
+      backgroundColor:null,
+      logging:false,
+      onclone:(doc)=>{
+        // ig-right
+        doc.querySelectorAll('.ig-right').forEach(el=>{
+          el.style.backdropFilter='none';
+          el.style.webkitBackdropFilter='none';
+          el.style.background='rgba(255,255,255,0.91)';
+        });
+
+      }
+    }).then(canvas=>{
+      document.body.removeChild(container);
+      const a=document.createElement('a');
+      a.download='weather_instagram_1080x1080.png';
+      a.href=canvas.toDataURL('image/png');
+      a.click();
+    }).catch(err=>{
+      document.body.removeChild(container);
+      console.error('Export error:',err);
+      alert('Export алдаа гарлаа. Дахин оролдоно уу.');
+    });
+  },200);
+}
+
+buildCondRows();buildSoumBtns();buildSoumImgBtns();
+// Auto-fill today
+(()=>{
+  const d=new Date();
+  document.getElementById('o_month').value=MN_MONTHS[d.getMonth()];
+  document.getElementById('o_day').value=d.getDate();
+  document.getElementById('o_weekday').value=MN_WEEKDAYS[d.getDay()];
+  document.getElementById('o_year').value=`${d.getFullYear()} оны ${MN_MONTHS[d.getMonth()]} ${d.getDate()}-ны`;
+})();
+window.addEventListener('load',scaleCard);
+</script>
+</body>
+</html>
