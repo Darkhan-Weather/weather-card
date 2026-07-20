@@ -11,6 +11,38 @@
 body{font-family:'Nunito',Arial,sans-serif;background:#e8f0f8;min-height:100vh;color:#1a2535}
 :root{--pal-bg1:#0d2459;--pal-bg2:#1a4a8a;--pal-accent:#ffd84d;--pal-bar1:#0a1e4a;--pal-bar2:#1a4a8a;}
 
+
+/* ── QUICK TAGS ── */
+.quick-tags{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:8px}
+.qtag{font-size:10px;padding:3px 9px;border-radius:6px;border:1.5px solid #d8e4f0;background:#f4f8fd;cursor:pointer;font-family:'Nunito',Arial,sans-serif;font-weight:700;color:#1a2535;transition:all .15s}
+.qtag:hover{background:#1a5fa5;color:#fff;border-color:#1a5fa5}
+.qtag-hot{border-color:#e87820;color:#e87820}
+.qtag-hot:hover{background:#e87820;color:#fff}
+.qtag-blue{border-color:#1a5fa5;color:#1a5fa5}
+.qtag-blue:hover{background:#1a5fa5;color:#fff}
+
+/* ── FORMAT SELECTOR ── */
+.format-bar{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap}
+.fmt-btn{flex:1;min-width:80px;padding:8px 6px;border-radius:10px;border:2px solid #d8e4f0;background:#fff;cursor:pointer;font-family:'Nunito',Arial,sans-serif;font-weight:800;font-size:11px;color:#6b7fa0;transition:all .15s;text-align:center}
+.fmt-btn.active{border-color:#1a5fa5;background:#1a5fa5;color:#fff}
+.fmt-btn:hover:not(.active){border-color:#1a5fa5;color:#1a5fa5}
+
+/* ── HISTORY ── */
+.history-list{display:flex;flex-direction:column;gap:6px;max-height:280px;overflow-y:auto}
+.history-item{display:flex;align-items:center;gap:8px;padding:8px 10px;background:#f4f8fd;border-radius:9px;border:1px solid #e0eaf0;cursor:pointer;transition:all .15s}
+.history-item:hover{background:#dceefb;border-color:#1a5fa5}
+.history-item-info{flex:1;min-width:0}
+.history-item-date{font-size:12px;font-weight:800;color:#1a2535}
+.history-item-desc{font-size:10px;color:#6b7fa0;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.history-del{background:none;border:none;color:#c0392b;cursor:pointer;font-size:14px;padding:2px 6px;border-radius:5px}
+.history-del:hover{background:#fde8e8}
+.history-empty{font-size:12px;color:#aab8c8;text-align:center;padding:20px;font-weight:600}
+
+/* ── CAPTION BOX ── */
+.caption-box{background:#f4f8fd;border:1.5px solid #d8e4f0;border-radius:10px;padding:12px;font-size:12px;color:#1a2535;font-family:'Nunito',Arial,sans-serif;font-weight:600;line-height:1.6;white-space:pre-wrap;margin-top:8px;max-height:120px;overflow-y:auto}
+.caption-copy-btn{background:linear-gradient(135deg,#00b894,#55efc4);color:#fff;border:none;padding:7px 16px;border-radius:8px;font-size:12px;cursor:pointer;font-family:'Nunito',Arial,sans-serif;font-weight:800;margin-top:6px;transition:all .15s}
+.caption-copy-btn:hover{transform:translateY(-1px)}
+
 /* ── APP HEADER ── */
 .app-header{
   background:linear-gradient(135deg,#0a1e4a,#1a4a8a);
@@ -250,6 +282,17 @@ input:focus,select:focus{border-color:#1a5fa5}
     <div class="card-title">📋 Нөхцлийн жагсаалт
       <button class="btn-s" onclick="addCond()" style="margin-left:auto">+ Мөр нэмэх</button>
     </div>
+    <div class="quick-tags" id="quickTagsWrap">
+      <span style="font-size:10px;font-weight:700;color:#6b7fa0;align-self:center;margin-right:2px">Хурдан оруулах:</span>
+      <button class="qtag qtag-blue" onclick="addQuickTag('⛅','Солигдмол үүлтэй.')">⛅ Солигдмол</button>
+      <button class="qtag qtag-blue" onclick="addQuickTag('☀️','Ихэнх нутгаар цэлмэг.')">☀️ Цэлмэг</button>
+      <button class="qtag qtag-blue" onclick="addQuickTag('🌧️','Нийт нутгаар <b>бороо</b> орно.')">🌧️ Бороо</button>
+      <button class="qtag qtag-blue" onclick="addQuickTag('❄️','Нийт нутгаар <b>цас</b> орно.')">❄️ Цас</button>
+      <button class="qtag qtag-blue" onclick="addQuickTag('🌨️','Зарим газраар цас бороо холилдон орно.')">🌨️ Цас бороо</button>
+      <button class="qtag qtag-hot" onclick="addQuickTag('💨','Салхи баруун хойноос секундэд <b class=\'hot\'>6-11 метр</b>.')">💨 Салхи</button>
+      <button class="qtag qtag-hot" onclick="addQuickTag('🌫️','Зарим газраар борооны өмнө тур зуур ширгүүсэж <b class=\'hot\'>шороон шуурга</b> шуурна.')">🌫️ Шуурга</button>
+      <button class="qtag qtag-hot" onclick="addQuickTag('🌡️','Өдөртөө <b class=\'hot\'>+18...+23</b> градус дулаан байна.')">🌡️ Температур</button>
+    </div>
     <div id="condRows"></div>
   </div>
 
@@ -329,16 +372,50 @@ input:focus,select:focus{border-color:#1a5fa5}
       </div>
     </div>
 
+    <!-- FORMAT SELECTOR -->
+    <div class="format-bar">
+      <button class="fmt-btn active" id="fmt1080" onclick="setFormat(1080,1080,'weather_1080x1080.png',this)">
+        📷 Instagram<br>1080×1080
+      </button>
+      <button class="fmt-btn" id="fmt1920" onclick="setFormat(1080,1920,'weather_story_1080x1920.png',this)">
+        📱 Story<br>1080×1920
+      </button>
+      <button class="fmt-btn" id="fmt1200" onclick="setFormat(1200,630,'weather_fb_1200x630.png',this)">
+        🖥️ Facebook<br>1200×630
+      </button>
+    </div>
+
     <div class="act-bar">
       <button class="act-btn act-btn-palette" onclick="applyRandomPalette()">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M8 12a4 4 0 0 1 8 0c0 2-2 4-4 6-2-2-4-4-4-6z"/><circle cx="12" cy="9" r="1" fill="currentColor"/></svg>
         🎨 Өнгө солих
       </button>
-      <button class="act-btn act-btn-export" onclick="doInstagramPNG()">
+      <button class="act-btn act-btn-export" onclick="doExport()">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
         📥 Зураг татах
       </button>
+      <button class="act-btn" style="background:linear-gradient(135deg,#00b894,#55efc4);color:#fff;box-shadow:0 4px 16px rgba(0,184,148,0.3)" onclick="saveToHistory()">
+        💾 Хадгалах
+      </button>
     </div>
+
+    <!-- CAPTION -->
+    <div class="card" style="margin-top:10px">
+      <div class="card-title">📝 Instagram caption
+        <button class="caption-copy-btn" onclick="copyCaption()" style="margin-left:auto;font-size:11px;padding:5px 12px">📋 Хуулах</button>
+      </div>
+      <div class="caption-box" id="captionBox">Мэдээ үүсгэсний дараа caption автоматаар гарна.</div>
+    </div>
+  </div>
+</div>
+
+<!-- HISTORY PANEL -->
+<div class="editor" style="max-width:700px;margin:0 auto;padding:0 14px 20px">
+  <div class="card">
+    <div class="card-title">🗂️ Хадгалсан мэдээнүүд
+      <button class="btn-s" onclick="clearHistory()" style="margin-left:auto;color:#c0392b;border-color:#e8b4b4">🗑️ Бүгд устгах</button>
+    </div>
+    <div class="history-list" id="historyList"></div>
   </div>
 </div>
 
@@ -591,6 +668,7 @@ function generate1day(){
 
   document.getElementById('result1day').style.display='block';
   setTimeout(()=>{scaleCard();document.getElementById('result1day').scrollIntoView({behavior:'smooth',block:'start'});},80);
+  updateCaption();
 }
 
 // Export — full 1080×1080 without scaling
@@ -657,7 +735,179 @@ function doInstagramPNG(){
   },200);
 }
 
-buildCondRows();buildSoumBtns();buildSoumImgBtns();
+
+// ── FORMAT STATE ──
+let _exportW=1080,_exportH=1080,_exportFile='weather_1080x1080.png';
+function setFormat(w,h,fname,btn){
+  _exportW=w;_exportH=h;_exportFile=fname;
+  document.querySelectorAll('.fmt-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  // ig-wrap aspect ratio шинэчлэх
+  const wrap=document.getElementById('igWrap');
+  if(wrap) wrap.style.aspectRatio=w+'/'+h;
+  // ig-card хэмжээ шинэчлэх
+  const card=document.getElementById('exportTarget1');
+  if(card){card.style.width=w+'px';card.style.height=h+'px';}
+  scaleCard();
+}
+
+// ── QUICK TAG ──
+function addQuickTag(icon, text){
+  conditions.push({icon, text});
+  buildCondRows();
+}
+
+// ── EXPORT (format-aware) ──
+function doExport(){
+  const card=document.getElementById('exportTarget1');
+  const container=document.createElement('div');
+  container.style.cssText=`position:fixed;left:-${_exportW+100}px;top:0;width:${_exportW}px;height:${_exportH}px;overflow:visible;z-index:-1`;
+  document.body.appendChild(container);
+  const clone=card.cloneNode(true);
+  clone.style.cssText=`width:${_exportW}px;height:${_exportH}px;transform:none;position:relative;overflow:hidden`;
+  container.appendChild(clone);
+  const origImgs=card.querySelectorAll('img');
+  const cloneImgs=clone.querySelectorAll('img');
+  origImgs.forEach((img,i)=>{if(cloneImgs[i])cloneImgs[i].src=img.src;});
+  setTimeout(()=>{
+    html2canvas(clone,{
+      scale:1,useCORS:true,allowTaint:true,
+      width:_exportW,height:_exportH,
+      windowWidth:_exportW,windowHeight:_exportH,
+      backgroundColor:null,scrollX:0,scrollY:0,logging:false,
+      ignoreElements:(el)=>el.tagName==='SCRIPT'||(el.tagName==='DIV'&&!el.children.length&&!el.textContent.trim()&&el!==clone),
+      onclone:(doc)=>{
+        const c=doc.querySelector('.ig-card');
+        if(c){c.style.transform='none';c.style.position='absolute';c.style.top='0px';c.style.left='0px';}
+        doc.querySelectorAll('.ig-right').forEach(el=>{
+          el.style.backdropFilter='none';el.style.webkitBackdropFilter='none';
+          el.style.background='rgba(255,255,255,0.91)';
+        });
+      }
+    }).then(canvas=>{
+      document.body.removeChild(container);
+      const a=document.createElement('a');
+      a.download=_exportFile;
+      a.href=canvas.toDataURL('image/png');
+      a.click();
+    }).catch(err=>{
+      document.body.removeChild(container);
+      alert('Export алдаа: '+err.message);
+    });
+  },200);
+}
+
+// ── CAPTION ──
+function updateCaption(){
+  const month=gv('o_month')||'';
+  const day=gv('o_day')||'';
+  const weekday=gv('o_weekday')||'';
+  const temp=gv('o_temp')||'';
+  const region=gv('o_region')||'Дархан сум орчмоор';
+  const alert=gv('o_alert')||'';
+  const condTexts=conditions.map(c=>c.text.replace(/<[^>]+>/g,'')).join(' ');
+  let caption=`🌤️ ЦАГ АГААРЫН УРЬДЧИЛСАН МЭДЭЭ\n`;
+  caption+=`📅 ${month} ${day} (${weekday})\n\n`;
+  caption+=`📍 ${region}\n`;
+  caption+=`${condTexts}\n`;
+  if(temp) caption+=`🌡️ Температур: ${temp}\n`;
+  if(alert) caption+=`⚠️ ${alert}\n`;
+  caption+=`\n☎️ 70374161\n🌐 darkhan-uul.weather.gov.mn\n#цагагаар #Дархан #УЦУОШТ`;
+  const box=document.getElementById('captionBox');
+  if(box) box.textContent=caption;
+  return caption;
+}
+
+function copyCaption(){
+  const text=updateCaption();
+  navigator.clipboard.writeText(text).then(()=>{
+    const btn=event.target;
+    btn.textContent='✅ Хуулагдлаа!';
+    setTimeout(()=>btn.textContent='📋 Хуулах',2000);
+  }).catch(()=>{
+    const box=document.getElementById('captionBox');
+    if(box){const r=document.createRange();r.selectNode(box);window.getSelection().removeAllRanges();window.getSelection().addRange(r);}
+  });
+}
+
+// ── LOCALSTORAGE HISTORY ──
+const HISTORY_KEY='ucuosht_weather_history';
+
+function getHistory(){
+  try{return JSON.parse(localStorage.getItem(HISTORY_KEY)||'[]');}
+  catch(e){return [];}
+}
+
+function saveToHistory(){
+  const data={
+    id:Date.now(),
+    date: gv('o_year')||new Date().toLocaleDateString('mn-MN'),
+    month:gv('o_month'),day:gv('o_day'),weekday:gv('o_weekday'),
+    year:gv('o_year'),region:gv('o_region'),temp:gv('o_temp'),alert:gv('o_alert'),
+    soumIdx:currentSoumIdx,conditions:[...conditions],
+    savedAt:new Date().toLocaleString('mn-MN')
+  };
+  const hist=getHistory();
+  hist.unshift(data);
+  if(hist.length>10) hist.length=10; // Зөвхөн 10 хадгална
+  localStorage.setItem(HISTORY_KEY,JSON.stringify(hist));
+  renderHistory();
+  const btn=event.target;
+  btn.textContent='✅ Хадгалагдлаа!';
+  setTimeout(()=>btn.innerHTML='💾 Хадгалах',2000);
+}
+
+function loadFromHistory(id){
+  const hist=getHistory();
+  const item=hist.find(h=>h.id===id);
+  if(!item)return;
+  document.getElementById('o_month').value=item.month||'';
+  document.getElementById('o_day').value=item.day||'';
+  document.getElementById('o_weekday').value=item.weekday||'';
+  document.getElementById('o_year').value=item.year||'';
+  document.getElementById('o_region').value=item.region||'';
+  document.getElementById('o_temp').value=item.temp||'';
+  document.getElementById('o_alert').value=item.alert||'';
+  if(item.conditions) conditions=item.conditions;
+  if(item.soumIdx!==undefined) selectSoumImg(item.soumIdx);
+  buildCondRows();
+  generate1day();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function deleteFromHistory(id){
+  const hist=getHistory().filter(h=>h.id!==id);
+  localStorage.setItem(HISTORY_KEY,JSON.stringify(hist));
+  renderHistory();
+}
+
+function clearHistory(){
+  if(!confirm('Бүх хадгалсан мэдээг устгах уу?'))return;
+  localStorage.removeItem(HISTORY_KEY);
+  renderHistory();
+}
+
+function renderHistory(){
+  const list=document.getElementById('historyList');
+  if(!list)return;
+  const hist=getHistory();
+  if(!hist.length){
+    list.innerHTML='<div class="history-empty">Хадгалсан мэдээ байхгүй байна.</div>';
+    return;
+  }
+  list.innerHTML=hist.map(h=>`
+    <div class="history-item" onclick="loadFromHistory(${h.id})">
+      <div style="font-size:22px">📋</div>
+      <div class="history-item-info">
+        <div class="history-item-date">${h.date}</div>
+        <div class="history-item-desc">${h.region||''} — ${h.temp||''} | ${h.savedAt}</div>
+      </div>
+      <button class="history-del" onclick="event.stopPropagation();deleteFromHistory(${h.id})" title="Устгах">🗑️</button>
+    </div>
+  `).join('');
+}
+
+buildCondRows();buildSoumBtns();buildSoumImgBtns();renderHistory();
 // Auto-fill today
 (()=>{
   const d=new Date();
