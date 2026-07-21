@@ -43,6 +43,17 @@ body{font-family:'Nunito',Arial,sans-serif;background:#e8f0f8;min-height:100vh;c
 .caption-copy-btn{background:linear-gradient(135deg,#00b894,#55efc4);color:#fff;border:none;padding:7px 16px;border-radius:8px;font-size:12px;cursor:pointer;font-family:'Nunito',Arial,sans-serif;font-weight:800;margin-top:6px;transition:all .15s}
 .caption-copy-btn:hover{transform:translateY(-1px)}
 
+
+/* ── AUTO-FILL API BUTTON ── */
+.api-fill-bar{background:linear-gradient(135deg,#e8f5e9,#f0fdf4);border:1.5px solid #4caf50;border-radius:12px;padding:12px 14px;margin-bottom:10px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.api-fill-status{font-size:11px;font-weight:700;color:#2e7d32;flex:1;min-width:120px}
+.api-fill-time{font-size:10px;color:#66bb6a;font-weight:600}
+.btn-api{background:linear-gradient(135deg,#43a047,#1b5e20);color:#fff;border:none;padding:9px 18px;border-radius:9px;font-size:13px;cursor:pointer;font-family:'Nunito',Arial,sans-serif;font-weight:800;display:flex;align-items:center;gap:6px;transition:all .2s;white-space:nowrap}
+.btn-api:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(67,160,71,0.4)}
+.btn-api:disabled{opacity:0.6;cursor:not-allowed;transform:none}
+.api-soum-sel{padding:6px 10px;border-radius:8px;border:1.5px solid #a5d6a7;font-size:12px;font-family:'Nunito',Arial,sans-serif;font-weight:700;background:#fff;color:#1a2535;cursor:pointer}
+.api-fill-detail{font-size:10px;color:#388e3c;margin-top:4px;width:100%}
+
 /* ── APP HEADER ── */
 .app-header{
   background:linear-gradient(135deg,#0a1e4a,#1a4a8a);
@@ -294,6 +305,26 @@ input:focus,select:focus{border-color:#1a5fa5}
       <button class="qtag qtag-hot" onclick="addQuickTag('🌡️','Өдөртөө <b class=\'hot\'>+18...+23</b> градус дулаан байна.')">🌡️ Температур</button>
     </div>
     <div id="condRows"></div>
+  </div>
+
+  <!-- AUTO-FILL FROM PROGMAKER API -->
+  <div class="api-fill-bar" id="apiFillBar">
+    <div style="flex:1">
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+        <span style="font-size:13px;font-weight:800;color:#2e7d32">⚡ Автомат бөглөх</span>
+        <select class="api-soum-sel" id="apiSoumSel">
+          <option value="Дархан">🏭 Дархан</option>
+          <option value="Шаазгайт">🏘️ Шаазгайт</option>
+          <option value="Хонгор">🌄 Хонгор</option>
+          <option value="Шарын гол">🏞️ Шарын гол</option>
+        </select>
+        <button class="btn-api" id="apiFillBtn" onclick="autoFillFromAPI()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+          Progmaker-с татах
+        </button>
+      </div>
+      <div class="api-fill-detail" id="apiFillDetail">192.168.100.43:8090/api дотоод сервераас температур, салхины өгөгдөл автоматаар бөглөнө.</div>
+    </div>
   </div>
 
   <button class="btn-p" onclick="generate1day()">🌤️ Мэдээ үүсгэх</button>
@@ -905,6 +936,131 @@ function renderHistory(){
       <button class="history-del" onclick="event.stopPropagation();deleteFromHistory(${h.id})" title="Устгах">🗑️</button>
     </div>
   `).join('');
+}
+
+
+// ── PROGMAKER API AUTO-FILL ──
+const PROGMAKER_API = 'http://192.168.100.43:8090/api';
+
+const SOUM_STATION = {
+  'Дархан':    {ind:244, soumIdx:0, label:'Дархан сум орчмоор'},
+  'Шаазгайт':  {ind:251, soumIdx:1, label:'Орхон сум орчмоор'},
+  'Хонгор':    {ind:931, soumIdx:2, label:'Хонгор сум орчмоор'},
+  'Шарын гол': {ind:932, soumIdx:3, label:'Шарын гол сум орчмоор'},
+};
+
+const WIND_DIR_MN = (deg) => {
+  const d = ((deg % 360) + 360) % 360;
+  if(d<22.5||d>=337.5) return 'хойноос';
+  if(d<67.5)  return 'хойд зүүнээс';
+  if(d<112.5) return 'зүүнээс';
+  if(d<157.5) return 'өмнөд зүүнээс';
+  if(d<202.5) return 'өмнөөс';
+  if(d<247.5) return 'өмнөд баруунаас';
+  if(d<292.5) return 'баруунаас';
+  return 'хойд баруунаас';
+};
+
+async function autoFillFromAPI(){
+  const btn = document.getElementById('apiFillBtn');
+  const detail = document.getElementById('apiFillDetail');
+  const soumName = document.getElementById('apiSoumSel').value;
+  const soumInfo = SOUM_STATION[soumName];
+
+  btn.disabled = true;
+  btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> Татаж байна...';
+  detail.textContent = 'Progmaker серверт холбогдож байна...';
+
+  try {
+    // models endpoint — 5 хоногийн загварын дүн
+    const today = new Date();
+    const dateStr = today.toISOString().split('T')[0]; // YYYY-MM-DD
+
+    const res = await fetch(`${PROGMAKER_API}/get/models`, {
+      credentials: 'include',
+      headers: {'Accept': 'application/json'}
+    });
+
+    if(!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+
+    // Сонгосон сумын өгөгдөл хайх
+    const modArr = data.mod || data.models || data;
+    const soumData = Array.isArray(modArr)
+      ? modArr.find(m => m.sname === soumName || m.ind === soumInfo.ind)
+      : null;
+
+    if(!soumData) throw new Error(`"${soumName}" сумын өгөгдөл олдсонгүй`);
+
+    // Талбаруудыг бөглөх
+    const tempMin = Math.round(soumData.tem_min_d ?? soumData.tem_avg_d ?? 0);
+    const tempMax = Math.round(soumData.tem_max_d ?? soumData.tem_avg_d ?? 0);
+    const wndAvg  = Math.round(soumData.wnd_avg_d ?? 0);
+    const wndMax  = Math.round(soumData.wnd_max_d ?? wndAvg);
+    const precip  = soumData.rr_prec_d ?? 0;
+
+    // Температур
+    const tempStr = tempMin === tempMax
+      ? `+${tempMax}`
+      : `+${tempMin}...+${tempMax}`;
+    document.getElementById('o_temp').value = tempStr;
+
+    // Сум сонгох
+    selectSoumImg(soumInfo.soumIdx);
+    document.getElementById('o_region').value = soumInfo.label;
+
+    // Огноо автоматаар (аль хэдийн бөглөгдсөн байх ёстой ч давталт хийнэ)
+    const d = new Date();
+    document.getElementById('o_month').value = MN_MONTHS[d.getMonth()];
+    document.getElementById('o_day').value   = d.getDate();
+    document.getElementById('o_weekday').value = MN_WEEKDAYS[d.getDay()];
+    document.getElementById('o_year').value  = `${d.getFullYear()} оны ${MN_MONTHS[d.getMonth()]} ${d.getDate()}-ны`;
+
+    // Нөхцлийн мөрүүдийг автоматаар нэмэх
+    conditions = [];
+
+    // Үүлний нөхцөл (dd_p утгаас)
+    const cloudAvg = (soumData.dd_p_1||0 + soumData.dd_p_2||0 + soumData.dd_p_3||0) / 3;
+    if(cloudAvg >= 30) conditions.push({icon:'⛅', text:'Солигдмол үүлтэй.'});
+    else if(cloudAvg < 10) conditions.push({icon:'☀️', text:'Ихэнх нутгаар цэлмэг.'});
+    else conditions.push({icon:'☁️', text:'Их үүлтэй.'});
+
+    // Хур тунадас
+    if(precip >= 0.1){
+      conditions.push({icon:'🌧️', text:`Нийт нутгаар <b>бороо</b> орно.`});
+    }
+
+    // Салхи
+    if(wndAvg > 0){
+      conditions.push({icon:'💨',
+        text:`Салхи баруун хойноос секундэд <b class="hot">${wndAvg}-${wndMax} метр</b>.`
+      });
+    }
+
+    // Температур мөр
+    conditions.push({icon:'🌡️',
+      text:`Өдөртөө <b class="hot">${tempStr}</b> градус дулаан байна.`
+    });
+
+    buildCondRows();
+
+    // Амжилтын мэдэгдэл
+    const now = new Date().toLocaleTimeString('mn-MN');
+    detail.innerHTML = `✅ <b>${soumName}</b> сумын өгөгдөл татагдлаа — температур: ${tempStr}°, салхи: ${wndAvg}-${wndMax} м/с | ${now}`;
+    btn.innerHTML = '✅ Бөглөгдлөө';
+    btn.style.background = 'linear-gradient(135deg,#00897b,#004d40)';
+    setTimeout(()=>{
+      btn.disabled = false;
+      btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg> Progmaker-с татах';
+      btn.style.background = '';
+    }, 3000);
+
+  } catch(err) {
+    console.error('API error:', err);
+    detail.innerHTML = `❌ Алдаа: ${err.message} — сервер асаалттай эсэх шалгана уу.`;
+    btn.disabled = false;
+    btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg> Дахин оролдох';
+  }
 }
 
 buildCondRows();buildSoumBtns();buildSoumImgBtns();renderHistory();
