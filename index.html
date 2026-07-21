@@ -328,7 +328,12 @@ input:focus,select:focus{border-color:#1a5fa5}
         </a>
         <span style="font-size:10px;color:#666;font-weight:600">← Энийг bookmark toolbar-т чирж тавина уу</span>
       </div>
-      <div style="margin-top:8px;font-size:10px;color:#388e3c;font-weight:600" id="apiFillStatus"></div>
+      <div style="margin-top:8px;display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+        <button onclick="checkProgmakerData()" style="background:linear-gradient(135deg,#0984e3,#74b9ff);color:#fff;border:none;padding:7px 14px;border-radius:8px;font-size:12px;cursor:pointer;font-family:'Nunito',Arial,sans-serif;font-weight:800">
+          🔄 Progmaker өгөгдөл шалгах
+        </button>
+        <div style="font-size:10px;color:#388e3c;font-weight:600" id="apiFillStatus">Progmaker bookmark дарсны дараа энэ товч дарна уу.</div>
+      </div>
     </div>
   </div>
 
@@ -1023,10 +1028,8 @@ function fillFromData(arr){
     '.then(function(r){return r.json();})',
     '.then(function(d){',
     '  var arr=d.prognoz||d.mod||[];',
-    '  var bc=new BroadcastChannel("progmaker_weather");',
-    '  bc.postMessage({type:"PROGMAKER_WEATHER",payload:arr});',
-    '  bc.close();',
-    '  alert("✅ "+arr.length+" сумын өгөгдөл Weather Card-д илгээгдлээ!");',
+    '  localStorage.setItem("progmaker_data",JSON.stringify({payload:arr,ts:Date.now()}));',
+    '  alert("✅ "+arr.length+" сумын өгөгдөл хадгалагдлаа! Weather Card хуудсыг шалгана уу.");',
     '})',
     '.catch(function(e){alert("Алдаа: "+e.message);});',
     '})();'
@@ -1036,6 +1039,28 @@ function fillFromData(arr){
   if(link) link.href = 'javascript:' + encodeURIComponent(code);
 })();
 
+
+// localStorage-аас Progmaker өгөгдөл шалгах
+function checkProgmakerData(){
+  const status = document.getElementById('apiFillStatus');
+  const raw = localStorage.getItem('progmaker_data');
+  if(!raw){
+    if(status) status.innerHTML = '❌ Өгөгдөл байхгүй байна. Эхлээд Progmaker дээр bookmark дарна уу.';
+    return;
+  }
+  try {
+    const obj = JSON.parse(raw);
+    const age = Math.round((Date.now() - obj.ts) / 60000);
+    if(age > 60){
+      if(status) status.innerHTML = `⚠️ Өгөгдөл ${age} минутын өмнөх байна. Дахин татна уу.`;
+    }
+    fillFromData(obj.payload);
+    localStorage.removeItem('progmaker_data');
+    if(status) status.innerHTML = '✅ Бөглөгдлөө! ' + new Date().toLocaleTimeString('mn-MN');
+  } catch(e) {
+    if(status) status.innerHTML = '❌ Алдаа: ' + e.message;
+  }
+}
 
 // BroadcastChannel-р ирсэн өгөгдөл хүлээж авах
 (function listenBroadcast(){
