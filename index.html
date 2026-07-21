@@ -307,7 +307,7 @@ input:focus,select:focus{border-color:#1a5fa5}
     <div id="condRows"></div>
   </div>
 
-  <!-- AUTO-FILL FROM PROGMAKER JSON -->
+  <!-- AUTO-FILL FROM PROGMAKER - BOOKMARKLET -->
   <div class="api-fill-bar" id="apiFillBar">
     <div style="flex:1">
       <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px">
@@ -319,14 +319,16 @@ input:focus,select:focus{border-color:#1a5fa5}
           <option value="Шарын гол">🏞️ Шарын гол</option>
         </select>
       </div>
-      <div style="display:flex;gap:6px;align-items:flex-start">
-        <textarea id="apiJsonInput" placeholder='Progmaker → Network → "12hours" → Response → Copy → Энд paste хийнэ үү...' style="flex:1;min-height:65px;padding:8px 10px;border:1.5px solid #a5d6a7;border-radius:9px;font-size:11px;font-family:monospace;resize:vertical;color:#1a2535;background:#f9fffe;outline:none"></textarea>
-        <button class="btn-api" id="apiFillBtn" onclick="autoFillFromJSON()">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
-          Бөглөх
-        </button>
+      <div class="api-fill-detail" id="apiFillDetail" style="margin-bottom:8px">
+        📌 <b>Bookmarklet</b> дараах байдлаар суулгана: доорх товчийг <b>bookmark мөрт чирж тавина</b>. Дараа нь Progmaker хуудсанд байхад тэр bookmark дарахад энэ хуудсанд автоматаар өгөгдөл бөглөгдөнө.
       </div>
-      <div class="api-fill-detail" id="apiFillDetail">Progmaker → <b>Прогноз харах → 12 цагийн нарийвчилсан УМ</b> → F12 → Network → <b>12hours</b> → Response → бүгдийг copy → дээрх талбарт paste → Бөглөх</div>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+        <a id="bookmarkletLink" href="#" style="background:linear-gradient(135deg,#f39c12,#e67e22);color:#fff;padding:8px 16px;border-radius:9px;font-size:12px;font-weight:800;text-decoration:none;font-family:'Nunito',Arial,sans-serif;cursor:grab;border:2px dashed rgba(255,255,255,0.4)" title="Энийг bookmark мөрт чир">
+          📡 Progmaker → Weather Card
+        </a>
+        <span style="font-size:10px;color:#666;font-weight:600">← Энийг bookmark toolbar-т чирж тавина уу</span>
+      </div>
+      <div style="margin-top:8px;font-size:10px;color:#388e3c;font-weight:600" id="apiFillStatus"></div>
     </div>
   </div>
 
@@ -942,7 +944,7 @@ function renderHistory(){
 }
 
 
-// ── PROGMAKER JSON AUTO-FILL ──
+// ── PROGMAKER BOOKMARKLET AUTO-FILL ──
 const SOUM_STATION = {
   'Дархан':    {ind:244, soumIdx:0, label:'Дархан сум орчмоор'},
   'Шаазгайт':  {ind:251, soumIdx:1, label:'Орхон сум орчмоор'},
@@ -962,78 +964,96 @@ const WIND_DIR_MN = (deg) => {
   return 'хойд баруунаас';
 };
 
-function autoFillFromJSON(){
-  const btn    = document.getElementById('apiFillBtn');
-  const detail = document.getElementById('apiFillDetail');
-  const raw    = (document.getElementById('apiJsonInput').value || '').trim();
-  const soumName  = document.getElementById('apiSoumSel').value;
-  const soumInfo  = SOUM_STATION[soumName];
-
-  if(!raw){
-    detail.innerHTML = '❌ JSON талбар хоосон байна.';
-    return;
+// postMessage-р ирсэн өгөгдлийг хүлээж авах
+window.addEventListener('message', function(e){
+  if(!e.data || e.data.type !== 'PROGMAKER_WEATHER') return;
+  const status = document.getElementById('apiFillStatus');
+  try {
+    fillFromData(e.data.payload);
+    if(status) status.innerHTML = '✅ Progmaker-с өгөгдөл ирлээ! ' + new Date().toLocaleTimeString('mn-MN');
+  } catch(err) {
+    if(status) status.innerHTML = '❌ Алдаа: ' + err.message;
   }
-  let data;
-  try { data = JSON.parse(raw); }
-  catch(e){ detail.innerHTML = '❌ JSON буруу: ' + e.message; return; }
+});
 
-  const arr = data.prognoz || data.mod || (Array.isArray(data) ? data : []);
+function fillFromData(arr){
+  const soumName = document.getElementById('apiSoumSel').value;
+  const soumInfo = SOUM_STATION[soumName];
   const row = arr.find(m => m.sname === soumName || m.sid == soumInfo.ind);
-  if(!row){ detail.innerHTML = `❌ "${soumName}" олдсонгүй.`; return; }
+  if(!row) throw new Error(`"${soumName}" олдсонгүй`);
 
-  // Зөв талбарын нэрүүд: d1Tmax, d1W_speed_d, d1WWd, d1dPer
   const tempMax = Math.round(+(row.d1Tmax ?? row.dlTMax ?? row.tem_max_d ?? row.omax ?? 0));
+  const tempMin = tempMax - 4;
   const wndSpd  = Math.round(+(row.d1W_speed_d ?? row.dlW_speed_d ?? row.wnd_avg_d ?? 0));
   const wndDir  = +(row.d1WWd ?? row.dlWd ?? row.wnd_dir_d ?? 315);
   const cloud   = +(row.d1dPer ?? row.dldPer ?? row.dd_p_1 ?? 50);
   const precip  = +(row.d1Rr ?? row.dlRr ?? row.rr_prec_d ?? 0);
-
-  // Температур — зөвхөн max байна, min = max-4 болгох
-  const tempMin = tempMax - 4;
   const tempStr = `+${tempMin}...+${tempMax}`;
-  document.getElementById('o_temp').value = tempStr;
 
-  // Сум сонгох
+  document.getElementById('o_temp').value = tempStr;
   selectSoumImg(soumInfo.soumIdx);
   document.getElementById('o_region').value = soumInfo.label;
 
-  // Огноо
   const d = new Date();
   document.getElementById('o_month').value   = MN_MONTHS[d.getMonth()];
   document.getElementById('o_day').value     = d.getDate();
   document.getElementById('o_weekday').value = MN_WEEKDAYS[d.getDay()];
   document.getElementById('o_year').value    = `${d.getFullYear()} оны ${MN_MONTHS[d.getMonth()]} ${d.getDate()}-ны`;
 
-  // Нөхцлийн мөрүүд
   conditions = [];
-
-  // Үүл
   if(cloud < 20)      conditions.push({icon:'☀️', text:'Ихэнх нутгаар цэлмэг.'});
   else if(cloud < 50) conditions.push({icon:'⛅',  text:'Солигдмол үүлтэй.'});
   else if(cloud < 80) conditions.push({icon:'🌤️', text:'Их үүлтэй, хэсэгчлэн цэлмэг.'});
   else                conditions.push({icon:'☁️',  text:'Бүрхэг үүлтэй.'});
-
-  // Бороо
-  if(precip >= 0.1)
-    conditions.push({icon:'🌧️', text:'Нийт нутгаар <b>бороо</b> орно.'});
-
-  // Салхи
+  if(precip >= 0.1)   conditions.push({icon:'🌧️', text:'Нийт нутгаар <b>бороо</b> орно.'});
   const dir = WIND_DIR_MN(wndDir);
-  if(wndSpd > 0)
-    conditions.push({icon:'💨', text:`Салхи ${dir}оос секундэд <b class="hot">${wndSpd} метр</b>.`});
-
-  // Температур мөр
+  if(wndSpd > 0) conditions.push({icon:'💨', text:`Салхи ${dir}оос секундэд <b class="hot">${wndSpd} метр</b>.`});
   conditions.push({icon:'🌡️', text:`Өдөртөө <b class="hot">${tempStr}</b> градус дулаан байна.`});
-
   buildCondRows();
-
-  // Амжилт
-  const now = new Date().toLocaleTimeString('mn-MN');
-  detail.innerHTML = `✅ <b>${soumName}</b> — температур: ${tempStr}°C, салхи: ${wndSpd} м/с (${dir}), үүл: ${cloud}% | ${now}`;
-  document.getElementById('apiJsonInput').value = '';
-  btn.innerHTML = '✅ Бөглөгдлөө';
-  setTimeout(()=>{ btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg> Бөглөх'; }, 2500);
 }
+
+// Bookmarklet кодыг үүсгэж link-т тавих
+(function buildBookmarklet(){
+  const WEATHER_CARD_URL = window.location.origin + window.location.pathname;
+  const bmCode = `javascript:(function(){
+    fetch('http://192.168.100.43:8090/api/get/12hours',{credentials:'include'})
+    .then(r=>r.json())
+    .then(d=>{
+      const arr=d.prognoz||d.mod||[];
+      const tabs=[...window.opener?[window.opener]:[]];
+      // postMessage to all tabs - find weather card
+      if(window.opener){window.opener.postMessage({type:'PROGMAKER_WEATHER',payload:arr},'*');}
+      else{
+        // broadcast channel
+        const bc=new BroadcastChannel('progmaker_weather');
+        bc.postMessage({type:'PROGMAKER_WEATHER',payload:arr});
+        bc.close();
+        alert('Өгөгдөл илгээгдлээ! Weather Card хуудсыг шалгана уу.');
+      }
+    })
+    .catch(e=>alert('Алдаа: '+e.message));
+  })();`;
+
+  const link = document.getElementById('bookmarkletLink');
+  if(link) link.href = bmCode;
+})();
+
+// BroadcastChannel-р ирсэн өгөгдөл хүлээж авах
+(function listenBroadcast(){
+  try {
+    const bc = new BroadcastChannel('progmaker_weather');
+    bc.onmessage = function(e){
+      if(!e.data || e.data.type !== 'PROGMAKER_WEATHER') return;
+      const status = document.getElementById('apiFillStatus');
+      try {
+        fillFromData(e.data.payload);
+        if(status) status.innerHTML = '✅ Progmaker-с өгөгдөл ирлээ! ' + new Date().toLocaleTimeString('mn-MN');
+      } catch(err) {
+        if(status) status.innerHTML = '❌ Алдаа: ' + err.message;
+      }
+    };
+  } catch(e){ console.log('BroadcastChannel not supported'); }
+})();
 
 
 buildCondRows();buildSoumBtns();buildSoumImgBtns();renderHistory();
