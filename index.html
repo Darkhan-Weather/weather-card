@@ -54,6 +54,36 @@ body{font-family:'Nunito',Arial,sans-serif;background:#e8f0f8;min-height:100vh;c
 .api-soum-sel{padding:6px 10px;border-radius:8px;border:1.5px solid #a5d6a7;font-size:12px;font-family:'Nunito',Arial,sans-serif;font-weight:700;background:#fff;color:#1a2535;cursor:pointer}
 .api-fill-detail{font-size:10px;color:#388e3c;margin-top:4px;width:100%}
 
+
+/* ── TEMPERATURE SLIDER ── */
+.temp-slider-wrap{margin-top:8px}
+.temp-slider-track{position:relative;height:6px;background:#e0eaf0;border-radius:3px;margin:18px 8px}
+.temp-slider-range{position:absolute;height:100%;background:linear-gradient(90deg,#74b9ff,#e17055);border-radius:3px}
+.temp-thumb{position:absolute;width:20px;height:20px;background:#fff;border:2.5px solid #1a5fa5;border-radius:50%;top:50%;transform:translate(-50%,-50%);cursor:grab;box-shadow:0 2px 8px rgba(0,0,0,0.15);transition:border-color .15s}
+.temp-thumb:hover{border-color:#e17055}
+.temp-labels{display:flex;justify-content:space-between;font-size:11px;color:#6b7fa0;font-weight:700;margin-top:4px;padding:0 4px}
+.temp-display{display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:4px}
+.temp-val{font-size:18px;font-weight:900;color:#1a5fa5}
+.temp-sep{font-size:14px;color:#aab8c8;font-weight:700}
+.temp-hist{display:flex;flex-wrap:wrap;gap:4px;margin-top:8px}
+.temp-hist-btn{font-size:10px;padding:3px 8px;border-radius:6px;border:1.5px solid #d8e4f0;background:#f4f8fd;cursor:pointer;font-family:'Nunito',Arial,sans-serif;font-weight:700;color:#1a5fa5;transition:all .15s}
+.temp-hist-btn:hover{background:#1a5fa5;color:#fff;border-color:#1a5fa5}
+
+/* ── PHRASE LIBRARY ── */
+.phrase-lib{margin-top:8px}
+.phrase-cats{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px}
+.pcat-btn{padding:5px 12px;border-radius:20px;border:1.5px solid #d8e4f0;background:#f4f8fd;cursor:pointer;font-size:11px;font-family:'Nunito',Arial,sans-serif;font-weight:800;color:#6b7fa0;transition:all .15s}
+.pcat-btn.active{background:#1a5fa5;color:#fff;border-color:#1a5fa5}
+.phrase-grid{display:flex;flex-direction:column;gap:4px;max-height:180px;overflow-y:auto}
+.phrase-item{display:flex;align-items:center;gap:8px;padding:6px 10px;background:#f4f8fd;border-radius:8px;border:1px solid #e0eaf0;cursor:pointer;transition:all .15s;font-size:12px;font-weight:600;color:#1a2535}
+.phrase-item:hover{background:#dceefb;border-color:#1a5fa5}
+.phrase-icon{font-size:16px;flex-shrink:0}
+
+/* ── TEMPLATES ── */
+.template-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
+.tpl-btn{padding:10px 8px;border-radius:10px;border:1.5px solid #d8e4f0;background:#f4f8fd;cursor:pointer;font-size:11px;font-family:'Nunito',Arial,sans-serif;font-weight:800;color:#1a2535;transition:all .15s;text-align:center;line-height:1.4}
+.tpl-btn:hover{background:#1a5fa5;color:#fff;border-color:#1a5fa5}
+
 /* ── APP HEADER ── */
 .app-header{
   background:linear-gradient(135deg,#0a1e4a,#1a4a8a);
@@ -266,7 +296,24 @@ input:focus,select:focus{border-color:#1a5fa5}
         </div>
         <div style="margin-top:6px;display:flex;flex-wrap:wrap;gap:5px" id="soumBtns"></div>
       </div>
-      <div><label>Температур</label><input type="text" id="o_temp" placeholder="+16...+18"></div>
+      <div>
+        <label>Температур</label>
+        <div class="temp-display">
+          <span class="temp-val" id="tempMinDisplay">+18</span>
+          <span class="temp-sep">...</span>
+          <span class="temp-val" id="tempMaxDisplay">+28</span>
+        </div>
+        <div class="temp-slider-wrap">
+          <div class="temp-slider-track" id="tempTrack">
+            <div class="temp-slider-range" id="tempRange"></div>
+            <div class="temp-thumb" id="thumbMin" title="Доод температур"></div>
+            <div class="temp-thumb" id="thumbMax" title="Дээд температур"></div>
+          </div>
+          <div class="temp-labels"><span>-20°</span><span>0°</span><span>+20°</span><span>+40°</span></div>
+        </div>
+        <div class="temp-hist" id="tempHistWrap"></div>
+        <input type="hidden" id="o_temp" value="+18...+28">
+      </div>
     </div>
   </div>
 
@@ -293,6 +340,20 @@ input:focus,select:focus{border-color:#1a5fa5}
     <div class="card-title">📋 Нөхцлийн жагсаалт
       <button class="btn-s" onclick="addCond()" style="margin-left:auto">+ Мөр нэмэх</button>
     </div>
+
+    <!-- ЗАГВАР СОНГОХ -->
+    <div style="margin-bottom:10px">
+      <div style="font-size:11px;font-weight:800;color:#6b7fa0;margin-bottom:6px;text-transform:uppercase;letter-spacing:.4px">⚡ Загвар сонгох</div>
+      <div class="template-grid" id="templateGrid"></div>
+    </div>
+
+    <!-- БЭЛЭН ӨГҮҮЛБЭРИЙН САН -->
+    <div class="phrase-lib" style="margin-bottom:10px">
+      <div style="font-size:11px;font-weight:800;color:#6b7fa0;margin-bottom:6px;text-transform:uppercase;letter-spacing:.4px">📚 Өгүүлбэрийн сан</div>
+      <div class="phrase-cats" id="phraseCats"></div>
+      <div class="phrase-grid" id="phraseGrid"></div>
+    </div>
+
     <div class="quick-tags" id="quickTagsWrap">
       <span style="font-size:10px;font-weight:700;color:#6b7fa0;align-self:center;margin-right:2px">Хурдан оруулах:</span>
       <button class="qtag qtag-blue" onclick="addQuickTag('⛅','Солигдмол үүлтэй.')">⛅ Солигдмол</button>
@@ -1080,7 +1141,224 @@ function checkProgmakerData(){
 })();
 
 
+
+// ══════════════════════════════════════════
+// ТЕМПЕРАТУРЫН SLIDER
+// ══════════════════════════════════════════
+let _tempMin = 18, _tempMax = 28;
+const TEMP_RANGE_MIN = -20, TEMP_RANGE_MAX = 40;
+
+function tempToPercent(v){ return (v - TEMP_RANGE_MIN) / (TEMP_RANGE_MAX - TEMP_RANGE_MIN) * 100; }
+function percentToTemp(p){ return Math.round(p / 100 * (TEMP_RANGE_MAX - TEMP_RANGE_MIN) + TEMP_RANGE_MIN); }
+
+function updateTempUI(){
+  const minP = tempToPercent(_tempMin);
+  const maxP = tempToPercent(_tempMax);
+  document.getElementById('thumbMin').style.left = minP + '%';
+  document.getElementById('thumbMax').style.left = maxP + '%';
+  document.getElementById('tempRange').style.left = minP + '%';
+  document.getElementById('tempRange').style.width = (maxP - minP) + '%';
+  const minStr = (_tempMin >= 0 ? '+' : '') + _tempMin;
+  const maxStr = (_tempMax >= 0 ? '+' : '') + _tempMax;
+  document.getElementById('tempMinDisplay').textContent = minStr;
+  document.getElementById('tempMaxDisplay').textContent = maxStr;
+  document.getElementById('o_temp').value = minStr + '...' + maxStr;
+}
+
+function initTempSlider(){
+  const track = document.getElementById('tempTrack');
+  const thumbMin = document.getElementById('thumbMin');
+  const thumbMax = document.getElementById('thumbMax');
+  if(!track) return;
+
+  function startDrag(thumb, isMin){
+    return function(e){
+      e.preventDefault();
+      const rect = track.getBoundingClientRect();
+      function onMove(ev){
+        const clientX = ev.touches ? ev.touches[0].clientX : ev.clientX;
+        let p = Math.max(0, Math.min(100, (clientX - rect.left) / rect.width * 100));
+        const v = percentToTemp(p);
+        if(isMin){ _tempMin = Math.min(v, _tempMax - 1); }
+        else { _tempMax = Math.max(v, _tempMin + 1); }
+        updateTempUI();
+      }
+      function onUp(){ document.removeEventListener('mousemove', onMove); document.removeEventListener('mouseup', onUp); document.removeEventListener('touchmove', onMove); document.removeEventListener('touchend', onUp); saveTempHistory(); }
+      document.addEventListener('mousemove', onMove);
+      document.addEventListener('mouseup', onUp);
+      document.addEventListener('touchmove', onMove, {passive:false});
+      document.addEventListener('touchend', onUp);
+    };
+  }
+
+  thumbMin.addEventListener('mousedown', startDrag(thumbMin, true));
+  thumbMin.addEventListener('touchstart', startDrag(thumbMin, true), {passive:false});
+  thumbMax.addEventListener('mousedown', startDrag(thumbMax, false));
+  thumbMax.addEventListener('touchstart', startDrag(thumbMax, false), {passive:false});
+  updateTempUI();
+}
+
+// Температурын түүх
+const TEMP_HIST_KEY = 'ucuosht_temp_history';
+function saveTempHistory(){
+  const hist = JSON.parse(localStorage.getItem(TEMP_HIST_KEY) || '[]');
+  const entry = {min:_tempMin, max:_tempMax, date: new Date().toLocaleDateString('mn-MN')};
+  const exists = hist.find(h => h.min===_tempMin && h.max===_tempMax);
+  if(!exists){ hist.unshift(entry); if(hist.length>7) hist.length=7; localStorage.setItem(TEMP_HIST_KEY, JSON.stringify(hist)); }
+  renderTempHistory();
+}
+function renderTempHistory(){
+  const wrap = document.getElementById('tempHistWrap');
+  if(!wrap) return;
+  const hist = JSON.parse(localStorage.getItem(TEMP_HIST_KEY) || '[]');
+  if(!hist.length){ wrap.innerHTML=''; return; }
+  wrap.innerHTML = '<span style="font-size:10px;color:#aab8c8;font-weight:700;align-self:center">Өмнөх:</span>' +
+    hist.map(h => {
+      const minS = (h.min>=0?'+':'')+h.min;
+      const maxS = (h.max>=0?'+':'')+h.max;
+      return `<button class="temp-hist-btn" onclick="applyTempHist(${h.min},${h.max})">${minS}...${maxS}</button>`;
+    }).join('');
+}
+function applyTempHist(min, max){ _tempMin=min; _tempMax=max; updateTempUI(); }
+
+// ══════════════════════════════════════════
+// БЭЛЭН ӨГҮҮЛБЭРИЙН САН
+// ══════════════════════════════════════════
+const PHRASES = {
+  '☁️ Үүл': [
+    {icon:'☀️', text:'Ихэнх нутгаар цэлмэг.'},
+    {icon:'⛅', text:'Солигдмол үүлтэй.'},
+    {icon:'☁️', text:'Бүрхэг үүлтэй.'},
+    {icon:'🌤️', text:'Их үүлтэй, хэсэгчлэн цэлмэг.'},
+    {icon:'🌥️', text:'Ихэнх нутгаар их үүлтэй.'},
+  ],
+  '🌧️ Бороо': [
+    {icon:'🌧️', text:'Нийт нутгаар <b>бороо</b> орно.'},
+    {icon:'🌧️', text:'Зарим газраар бороо орно.'},
+    {icon:'🌦️', text:'Хэсэгчлэн бороотой.'},
+    {icon:'⛈️', text:'Аадар <b>бороо</b> орно.'},
+    {icon:'🌧️', text:'Их хэмжээний <b>бороо</b> орно.'},
+  ],
+  '❄️ Цас': [
+    {icon:'❄️', text:'Нийт нутгаар <b>цас</b> орно.'},
+    {icon:'🌨️', text:'Зарим газраар цас бороо холилдон орно.'},
+    {icon:'❄️', text:'Хүчтэй <b>цасан шуурга</b> шуурна.'},
+    {icon:'🌨️', text:'Хэсэгчлэн цастай.'},
+  ],
+  '💨 Салхи': [
+    {icon:'💨', text:'Салхи баруун хойноос секундэд <b class="hot">6-11 метр</b>.'},
+    {icon:'💨', text:'Салхи баруунаас секундэд <b class="hot">4-8 метр</b>.'},
+    {icon:'💨', text:'Салхи өмнөөс секундэд <b class="hot">3-7 метр</b>.'},
+    {icon:'🌫️', text:'Зарим газраар борооны өмнө тур зуур ширгүүсэж <b class="hot">шороон шуурга</b> шуурна.'},
+    {icon:'💨', text:'Салхи хойноос секундэд <b class="hot">8-14 метр</b>, шуурамцай.'},
+  ],
+  '🌡️ Температур': [
+    {icon:'🌡️', text:'Өдөртөө <b class="hot">+20...+25</b> градус дулаан байна.'},
+    {icon:'🌡️', text:'Өдөртөө <b class="hot">+25...+32</b> градус халуун байна.'},
+    {icon:'🌡️', text:'Өдөртөө <b class="cold">-5...-10</b> градус хүйтэн байна.'},
+    {icon:'🌡️', text:'Шөнө <b class="cold">-15...-20</b> градус хүрч хүйтрэнэ.'},
+    {icon:'🌡️', text:'Өдөртөө <b class="hot">+15...+20</b> градус дулаан байна.'},
+  ],
+};
+
+let _activePcat = '☁️ Үүл';
+
+function buildPhraseLib(){
+  const cats = document.getElementById('phraseCats');
+  const grid = document.getElementById('phraseGrid');
+  if(!cats || !grid) return;
+
+  cats.innerHTML = Object.keys(PHRASES).map(cat =>
+    `<button class="pcat-btn${cat===_activePcat?' active':''}" onclick="selectPcat('${cat}')">${cat}</button>`
+  ).join('');
+
+  renderPhrases();
+}
+
+function selectPcat(cat){
+  _activePcat = cat;
+  document.querySelectorAll('.pcat-btn').forEach(b => b.classList.toggle('active', b.textContent===cat));
+  renderPhrases();
+}
+
+function renderPhrases(){
+  const grid = document.getElementById('phraseGrid');
+  if(!grid) return;
+  const list = PHRASES[_activePcat] || [];
+  grid.innerHTML = list.map((p,i) =>
+    `<div class="phrase-item" onclick="addPhraseToList(${i})">
+      <span class="phrase-icon">${p.icon}</span>
+      <span>${p.text.replace(/<[^>]+>/g,'')}</span>
+    </div>`
+  ).join('');
+}
+
+function addPhraseToList(idx){
+  const p = PHRASES[_activePcat][idx];
+  conditions.push({icon: p.icon, text: p.text});
+  buildCondRows();
+}
+
+// ══════════════════════════════════════════
+// ЗАГВАР СОНГОХ
+// ══════════════════════════════════════════
+const TEMPLATES = [
+  {
+    name:'☀️ Цэлмэг халуун',
+    conds:[
+      {icon:'☀️', text:'Ихэнх нутгаар цэлмэг.'},
+      {icon:'💨', text:'Салхи баруунаас секундэд <b class="hot">3-7 метр</b>.'},
+      {icon:'🌡️', text:'Өдөртөө <b class="hot">+25...+32</b> градус халуун байна.'},
+    ]
+  },
+  {
+    name:'🌧️ Зуны бороотой',
+    conds:[
+      {icon:'⛅', text:'Солигдмол үүлтэй.'},
+      {icon:'🌧️', text:'Нийт нутгаар <b>бороо</b> орно.'},
+      {icon:'💨', text:'Салхи баруун хойноос секундэд <b class="hot">6-11 метр</b>.'},
+      {icon:'🌫️', text:'Зарим газраар борооны өмнө тур зуур ширгүүсэж <b class="hot">шороон шуурга</b> шуурна.'},
+      {icon:'🌡️', text:'Өдөртөө <b class="hot">+18...+24</b> градус дулаан байна.'},
+    ]
+  },
+  {
+    name:'❄️ Өвлийн цастай',
+    conds:[
+      {icon:'☁️', text:'Бүрхэг үүлтэй.'},
+      {icon:'❄️', text:'Нийт нутгаар <b>цас</b> орно.'},
+      {icon:'💨', text:'Салхи хойноос секундэд <b class="hot">8-14 метр</b>, шуурамцай.'},
+      {icon:'🌡️', text:'Өдөртөө <b class="cold">-10...-15</b> градус хүйтэн байна.'},
+    ]
+  },
+  {
+    name:'🌤️ Хэсэгчлэн үүлтэй',
+    conds:[
+      {icon:'🌤️', text:'Их үүлтэй, хэсэгчлэн цэлмэг.'},
+      {icon:'💨', text:'Салхи баруунаас секундэд <b class="hot">4-8 метр</b>.'},
+      {icon:'🌡️', text:'Өдөртөө <b class="hot">+20...+26</b> градус дулаан байна.'},
+    ]
+  },
+];
+
+function buildTemplates(){
+  const grid = document.getElementById('templateGrid');
+  if(!grid) return;
+  grid.innerHTML = TEMPLATES.map((t,i) =>
+    `<button class="tpl-btn" onclick="applyTemplate(${i})">${t.name}</button>`
+  ).join('');
+}
+
+function applyTemplate(idx){
+  const tpl = TEMPLATES[idx];
+  conditions = [...tpl.conds];
+  buildCondRows();
+}
+
 buildCondRows();buildSoumBtns();buildSoumImgBtns();renderHistory();
+initTempSlider();
+renderTempHistory();
+buildPhraseLib();
+buildTemplates();
 // Auto-fill today
 (()=>{
   const d=new Date();
