@@ -1014,34 +1014,28 @@ function fillFromData(arr){
 
 // Bookmarklet кодыг үүсгэж link-т тавих
 (function buildBookmarklet(){
-  const WEATHER_CARD_URL = window.location.origin + window.location.pathname;
-  const bmCode = `javascript:(function(){
-    fetch('http://192.168.100.43:8090/api/get/getPrognoz/12hours',{
-      method:'POST',
-      credentials:'include',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({aID:117,date:new Date().toISOString()})
-    })
-    .then(r=>r.json())
-    .then(d=>{
-      const arr=d.prognoz||d.mod||[];
-      const tabs=[...window.opener?[window.opener]:[]];
-      // postMessage to all tabs - find weather card
-      if(window.opener){window.opener.postMessage({type:'PROGMAKER_WEATHER',payload:arr},'*');}
-      else{
-        // broadcast channel
-        const bc=new BroadcastChannel('progmaker_weather');
-        bc.postMessage({type:'PROGMAKER_WEATHER',payload:arr});
-        bc.close();
-        alert('Өгөгдөл илгээгдлээ! Weather Card хуудсыг шалгана уу.');
-      }
-    })
-    .catch(e=>alert('Алдаа: '+e.message));
-  })();`;
+  // Raw JS код — quote асуудалгүй болгох
+  const code = [
+    '(function(){',
+    'var u="http://192.168.100.43:8090/api/get/getPrognoz/12hours";',
+    'var b=JSON.stringify({aID:117,date:new Date().toISOString()});',
+    'fetch(u,{method:"POST",credentials:"include",headers:{"Content-Type":"application/json"},body:b})',
+    '.then(function(r){return r.json();})',
+    '.then(function(d){',
+    '  var arr=d.prognoz||d.mod||[];',
+    '  var bc=new BroadcastChannel("progmaker_weather");',
+    '  bc.postMessage({type:"PROGMAKER_WEATHER",payload:arr});',
+    '  bc.close();',
+    '  alert("✅ "+arr.length+" сумын өгөгдөл Weather Card-д илгээгдлээ!");',
+    '})',
+    '.catch(function(e){alert("Алдаа: "+e.message);});',
+    '})();'
+  ].join('');
 
   const link = document.getElementById('bookmarkletLink');
-  if(link) link.href = bmCode;
+  if(link) link.href = 'javascript:' + encodeURIComponent(code);
 })();
+
 
 // BroadcastChannel-р ирсэн өгөгдөл хүлээж авах
 (function listenBroadcast(){
