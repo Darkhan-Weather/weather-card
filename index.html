@@ -1371,20 +1371,16 @@ async function fetchRiverData(){
   if(btn) btn.textContent = '⏳ Татаж байна...';
 
   try {
-    const res = await fetch('https://weather.gov.mn/api/get/obs/rivers', {
-      method: 'POST',
-      credentials: 'include',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({})
-    });
+    const res = await fetch('https://weather-proxy-o14g.onrender.com/hydrology');
     if(!res.ok) throw new Error('HTTP ' + res.status);
     const data = await res.json();
 
-    // Дархан-Уулын станцуудыг шүүх
-    const darkhan = (data.obs_river || []).filter(r => r.aimag_name === 'Дархан-Уул');
-    if(!darkhan.length) throw new Error('Дархан-Уулын өгөгдөл олдсонгүй');
+    if(!data.success) throw new Error(data.message || 'API алдаа');
 
-    renderRiverData(darkhan);
+    const stations = data.data || [];
+    if(!stations.length) throw new Error('Өгөгдөл олдсонгүй');
+
+    renderRiverData(stations);
 
     // Голын мэдээний товчийг нуух
     if(initBtn) initBtn.style.display = 'none';
@@ -1405,26 +1401,26 @@ function renderRiverData(stations){
 
   wrap.innerHTML = stations.map(s => {
     // Аюулын зэрэглэл тодорхойлох
-    const dangerDiff = s.danger ?? -999;
     let statusCls, statusTxt;
-    if(dangerDiff >= 0){
+    const st = (s.status || '').toUpperCase();
+    if(s.waterLevel >= s.floodThreshold){
       statusCls = 'river-danger'; statusTxt = '⚠️ Аюулын зэрэглэл';
-    } else if((s.flood ?? -999) >= 0){
+    } else if(s.waterLevel >= s.normalLevel * 1.2){
       statusCls = 'river-warn'; statusTxt = '🟡 Үерийн зэрэглэл';
     } else {
       statusCls = 'river-safe'; statusTxt = '🟢 Хэвийн';
     }
 
-    const obsDate = s.obs_date ? new Date(s.obs_date).toLocaleDateString('mn-MN') : '';
-    const dh = s.dh >= 0 ? '+'+s.dh : ''+s.dh;
+    const trendIcon = s.trend === 'RISING' ? '↑' : s.trend === 'FALLING' ? '↓' : '→';
+    const trendColor = s.trend === 'RISING' ? '#e17055' : s.trend === 'FALLING' ? '#00b894' : '#90a4ae';
 
     return `<div class="river-card">
-      <div class="river-name">🌊 ${s.river_name} · ${s.sum_name}</div>
-      <div class="river-h">${s.h_cm}<span> см</span>
-        <span style="font-size:11px;color:${s.dh>0?'#e17055':s.dh<0?'#00b894':'#90a4ae'};margin-left:4px">${dh} см</span>
+      <div class="river-name">🌊 ${s.name || s.id}</div>
+      <div class="river-h">${s.waterLevel}<span> см</span>
+        <span style="font-size:13px;color:${trendColor};margin-left:6px">${trendIcon}</span>
       </div>
-      <div class="river-meta">💧 Усны хэм: ${s.water_tem ?? '—'}°C · 🌡️ Агаар: ${s.air_tem ?? '—'}°C</div>
-      <div class="river-meta">Дундаж: ${s.avg ?? '—'} см · ${obsDate}</div>
+      <div class="river-meta">💧 Усны хэм: ${s.waterTemp ?? '—'}°C · Урсац: ${s.flowRate ?? '—'} м³/с</div>
+      <div class="river-meta">Хэвийн: ${s.normalLevel ?? '—'} см · Аюулын: ${s.floodThreshold ?? '—'} см</div>
       <div class="river-status ${statusCls}">${statusTxt}</div>
     </div>`;
   }).join('');
