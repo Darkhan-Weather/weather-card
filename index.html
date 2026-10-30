@@ -296,6 +296,17 @@ input:focus,select:focus{border-color:#1a5fa5}
 
 <div class="editor">
 
+  <!-- ── WEATHER.GOV.MN API АВТОМАТ БӨГЛӨХ ── -->
+  <div class="api-fill-bar" id="apiFillBar">
+    <div style="flex:1;min-width:0">
+      <div class="api-fill-status" id="apiFillStatus">🌤️ weather.gov.mn API — Дархан өртөө (ID: 508)</div>
+      <div class="api-fill-detail" id="apiFillDetail">Товч дарж одоогийн цаг агаарын мэдээллийг автоматаар бөглөнө</div>
+    </div>
+    <button class="btn-api" id="btnApiFill" onclick="fillFromWeatherAPI()">
+      ⚡ Автомат бөглөх
+    </button>
+  </div>
+
   <div class="card">
     <div class="card-title">📅 Огноо & Байршил</div>
     <div class="g4">
@@ -1011,6 +1022,11 @@ function renderHistory(){
 // ТЕМПЕРАТУРЫН SLIDER
 // ══════════════════════════════════════════
 let _tempMin = 18, _tempMax = 28;
+function setTempRange(min, max) {
+  _tempMin = Math.max(-20, Math.min(min, 39));
+  _tempMax = Math.max(_tempMin + 1, Math.min(max, 40));
+  updateTempUI();
+}
 const TEMP_RANGE_MIN = -20, TEMP_RANGE_MAX = 40;
 
 function tempToPercent(v){ return (v - TEMP_RANGE_MIN) / (TEMP_RANGE_MAX - TEMP_RANGE_MIN) * 100; }
@@ -1221,6 +1237,134 @@ function applyTemplate(idx){
 
 
 // ══════════════════════════════════════════
+// ── WEATHER.GOV.MN API АВТОМАТ БӨГЛӨХ ──
+const WEATHER_API_KEY = 'wapi_free_0e874f4aaef44fa4bb2c81122c85ecee';
+const DARKHAN_STATION = 508; // Дархан өртөө
+
+const CONDITION_MAP = {
+  'Цэлмэг':        { icon: '☀️', text: 'Ихэнх нутгаар цэлмэг.' },
+  'Бага үүлтэй':   { icon: '🌤️', text: 'Бага зэрэг үүлтэй.' },
+  'Үүлэрхэг':      { icon: '⛅', text: 'Солигдмол үүлтэй.' },
+  'Их үүлтэй':     { icon: '☁️', text: 'Их үүлтэй, бүрхэг.' },
+  'Бороотой':      { icon: '🌧️', text: 'Нийт нутгаар <b>бороо</b> орно.' },
+  'Цастай':        { icon: '❄️', text: 'Нийт нутгаар <b>цас</b> орно.' },
+  'Манантай':      { icon: '🌫️', text: 'Манантай, харагдах зай хязгаарлагдмал.' },
+  'Шуурга':        { icon: '🌪️', text: 'Зарим газраар <b class="hot">шуурга</b> шуурна.' },
+};
+
+function windDirText(dir) {
+  const map = {
+    'Хойд':'хойноос', 'Хойд-зүүн':'хойд зүүнээс', 'Зүүн':'зүүнээс',
+    'Өмнөд-зүүн':'өмнөд зүүнээс', 'Өмнөд':'өмнөөс', 'Өмнөд-баруун':'өмнөд баруунаас',
+    'Баруун':'баруунаас', 'Хойд-баруун':'хойд баруунаас',
+    'Зүүн-өмнөд':'зүүн өмнөөс', 'Зүүн-хойд':'зүүн хойноос',
+    'Баруун-өмнөд':'баруун өмнөөс', 'Баруун-хойд':'баруун хойноос',
+    'Өмнөд зүүн':'өмнөд зүүнээс', 'Өмнөд Зүүн':'өмнөд зүүнээс',
+    'Өүм':'өмнөд зүүнээс', 'Зүүн өмнөд':'зүүн өмнөөс',
+  };
+  for (const [k, v] of Object.entries(map)) {
+    if (dir && dir.includes(k)) return v;
+  }
+  return (dir || '').toLowerCase() + 'оос';
+}
+
+async function fillFromWeatherAPI() {
+  const btn = document.getElementById('btnApiFill');
+  const status = document.getElementById('apiFillStatus');
+  const detail = document.getElementById('apiFillDetail');
+
+  btn.disabled = true;
+  btn.textContent = '⏳ Татаж байна...';
+  status.textContent = '🔄 weather.gov.mn-с мэдээлэл татаж байна...';
+
+  try {
+    const res = await fetch(`https://api.weather.gov.mn/api/v1/weather/current?station=${DARKHAN_STATION}`, {
+      headers: { 'X-API-Key': WEATHER_API_KEY }
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const json = await res.json();
+
+    if (!json.success) throw new Error(json.message || 'API алдаа');
+
+    const d = json.data;
+    const temp = parseFloat(d.temperature?.value ?? 0);
+    const windSpd = parseFloat(d.windSpeed ?? 0);
+    const windDir = windDirText(d.windDirection || '');
+    const condition = d.condition || 'Цэлмэг';
+    const ts = new Date(d.timestamp);
+
+    // Температур slider-д тохируулах (min=temp-2, max=temp+2 гэсэн байдлаар)
+    const tMin = Math.round(temp - 2);
+    const tMax = Math.round(temp + 2);
+    setTempRange(tMin, tMax);
+
+    // Нөхцлийн мөр нэмэх
+    const cond = CONDITION_MAP[condition] || { icon: '⛅', text: condition + '.' };
+    const windText = windSpd > 0
+      ? `Салхи ${windDir}оос секундэд <b class="hot">${windSpd.toFixed(0)} метр</b>.`
+      : '';
+
+    // Одоо байгаа нөхцлүүдийг цэвэрлэх
+    document.getElementById('condRows').innerHTML = '';
+    window._condCount = 0;
+
+    addCond();
+    // Тэнгэрийн байдал
+    setTimeout(() => {
+      const rows = document.querySelectorAll('.cond-row');
+      if (rows.length > 0) {
+        const emojiSel = rows[0].querySelector('select');
+        const textInp = rows[0].querySelector('input[type=text]');
+        if (emojiSel) emojiSel.value = cond.icon;
+        if (textInp) textInp.value = cond.text;
+      }
+      // Салхи мөр нэмэх
+      if (windText) {
+        addCond();
+        setTimeout(() => {
+          const rows2 = document.querySelectorAll('.cond-row');
+          const last = rows2[rows2.length - 1];
+          if (last) {
+            const emojiSel = last.querySelector('select');
+            const textInp = last.querySelector('input[type=text]');
+            if (emojiSel) emojiSel.value = '💨';
+            if (textInp) textInp.value = windText;
+          }
+        }, 50);
+      }
+    }, 50);
+
+    // Огноо автомат бөглөх
+    const MONGOLIAN_MONTHS = ['1-р сарын','2-р сарын','3-р сарын','4-р сарын','5-р сарын','6-р сарын','7-р сарын','8-р сарын','9-р сарын','10-р сарын','11-р сарын','12-р сарын'];
+    const WEEKDAYS = ['НЯМ','ДАВАА','МЯГМАР','ЛХАГВА','ПҮРЭВ','БААСАН','БЯМБА'];
+    const month = MONGOLIAN_MONTHS[ts.getMonth()];
+    const day = ts.getDate();
+    const weekday = WEEKDAYS[ts.getDay()];
+    const year = ts.getFullYear();
+
+    const elMonth = document.getElementById('o_month');
+    const elDay = document.getElementById('o_day');
+    const elWeekday = document.getElementById('o_weekday');
+    const elYear = document.getElementById('o_year');
+    if (elMonth && !elMonth.value) elMonth.value = month;
+    if (elDay && !elDay.value) elDay.value = day;
+    if (elWeekday && !elWeekday.value) elWeekday.value = weekday + ' ГАРАГ';
+    if (elYear && !elYear.value) elYear.value = `${year} оны ${month} ${day}-ны`;
+
+    const timeStr = ts.toLocaleTimeString('mn-MN', { hour:'2-digit', minute:'2-digit' });
+    status.textContent = `✅ Дархан өртөө — ${temp > 0 ? '+' : ''}${temp.toFixed(1)}°C, ${condition}`;
+    detail.textContent = `Шинэчлэгдсэн: ${timeStr} | Чийгшил: ${d.humidity}% | Даралт: ${d.pressure} hPa | Салхи: ${windSpd} м/с`;
+    btn.textContent = '🔄 Шинэчлэх';
+
+  } catch (e) {
+    status.textContent = '❌ Алдаа: ' + e.message;
+    detail.textContent = 'Дахин оролдно уу эсвэл гараар бөглөнө үү';
+    btn.textContent = '⚡ Дахин оролдох';
+  } finally {
+    btn.disabled = false;
+  }
+}
+
 // ГОЛЫН МЭДЭЭ — weather.gov.mn
 // ══════════════════════════════════════════
 async function fetchRiverData(){
