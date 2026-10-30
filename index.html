@@ -1278,9 +1278,7 @@ async function fillFromWeatherAPI() {
   status.textContent = '🔄 weather.gov.mn-с мэдээлэл татаж байна...';
 
   try {
-    const res = await fetch(`https://api.weather.gov.mn/api/v1/weather/current?station=${DARKHAN_STATION}`, {
-      headers: { 'X-API-Key': WEATHER_API_KEY }
-    });
+    const res = await fetch(`https://weather-proxy-o14g.onrender.com/weather?station=${DARKHAN_STATION}`);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const json = await res.json();
 
