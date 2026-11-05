@@ -591,6 +591,37 @@ input:focus,select:focus{border-color:var(--brand-mid)}
           <input type="checkbox" id="toggleDayNight" onchange="setDayNightMode(this.checked)" style="accent-color:#1a5fa5">
           ☀️🌙 Өдөр / шөнийн температур ялгаж харуулах
         </label>
+        <!-- Өдөр/шөнийн тусдаа slider (checkbox идэвхтэй үед харагдана) -->
+        <div id="dayNightSliders" style="display:none;margin-top:10px;display:none;flex-direction:column;gap:8px">
+          <!-- Шөнийн slider -->
+          <div>
+            <div style="font-size:11px;font-weight:700;color:#38bdf8;margin-bottom:4px">🌙 Шөнийн температур:
+              <span id="nightMinDisplay">-14</span>...<span id="nightMaxDisplay">-11</span>°
+            </div>
+            <div class="temp-slider-wrap">
+              <div class="temp-slider-track" id="nightTempTrack">
+                <div class="temp-slider-range" id="nightTempRange" style="background:rgba(56,189,248,0.4)"></div>
+                <div class="temp-thumb" id="nightThumbMin" title="Шөнийн доод температур" style="background:#38bdf8"></div>
+                <div class="temp-thumb" id="nightThumbMax" title="Шөнийн дээд температур" style="background:#38bdf8"></div>
+              </div>
+              <div class="temp-labels"><span>-20°</span><span>0°</span><span>+20°</span><span>+40°</span></div>
+            </div>
+          </div>
+          <!-- Өдрийн slider -->
+          <div>
+            <div style="font-size:11px;font-weight:700;color:#fb923c;margin-bottom:4px">☀️ Өдрийн температур:
+              <span id="dayMinDisplay">-3</span>...<span id="dayMaxDisplay">-1</span>°
+            </div>
+            <div class="temp-slider-wrap">
+              <div class="temp-slider-track" id="dayTempTrack">
+                <div class="temp-slider-range" id="dayTempRange" style="background:rgba(251,146,60,0.4)"></div>
+                <div class="temp-thumb" id="dayThumbMin" title="Өдрийн доод температур" style="background:#fb923c"></div>
+                <div class="temp-thumb" id="dayThumbMax" title="Өдрийн дээд температур" style="background:#fb923c"></div>
+              </div>
+              <div class="temp-labels"><span>-20°</span><span>0°</span><span>+20°</span><span>+40°</span></div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
     </div><!-- /card-body -->
@@ -1178,6 +1209,10 @@ const ALERT_RULES = [
 
 // Температурын min/max задлах
 function parseTemps(){
+  if(_dayNightMode){
+    // Өдөр/шөнийн горимд: шөнийн хамгийн бага, өдрийн хамгийн их
+    return {tMin: _nightMin, tMax: _dayMax};
+  }
   const tempStr = gv('o_temp') || '';
   const nums = tempStr.match(/-?\d+/g);
   if(!nums || !nums.length) return {tMin: null, tMax: null};
@@ -1600,6 +1635,10 @@ function renderHistory(){
 // ТЕМПЕРАТУРЫН SLIDER
 // ══════════════════════════════════════════
 let _tempMin = 18, _tempMax = 28;
+// Өдөр/шөнийн тусдаа температур
+let _nightMin = -14, _nightMax = -11;
+let _dayMin = -3, _dayMax = -1;
+
 function setTempRange(min, max) {
   _tempMin = Math.max(-20, Math.min(min, 39));
   _tempMax = Math.max(_tempMin + 1, Math.min(max, 40));
@@ -1609,6 +1648,7 @@ const TEMP_RANGE_MIN = -20, TEMP_RANGE_MAX = 40;
 
 function tempToPercent(v){ return (v - TEMP_RANGE_MIN) / (TEMP_RANGE_MAX - TEMP_RANGE_MIN) * 100; }
 function percentToTemp(p){ return Math.round(p / 100 * (TEMP_RANGE_MAX - TEMP_RANGE_MIN) + TEMP_RANGE_MIN); }
+function fmtT(v){ return (v >= 0 ? '+' : '') + v; }
 
 function updateTempUI(){
   const minP = tempToPercent(_tempMin);
@@ -1617,8 +1657,8 @@ function updateTempUI(){
   document.getElementById('thumbMax').style.left = maxP + '%';
   document.getElementById('tempRange').style.left = minP + '%';
   document.getElementById('tempRange').style.width = (maxP - minP) + '%';
-  const minStr = (_tempMin >= 0 ? '+' : '') + _tempMin;
-  const maxStr = (_tempMax >= 0 ? '+' : '') + _tempMax;
+  const minStr = fmtT(_tempMin);
+  const maxStr = fmtT(_tempMax);
   document.getElementById('tempMinDisplay').textContent = minStr;
   document.getElementById('tempMaxDisplay').textContent = maxStr;
   document.getElementById('o_temp').value = minStr + '...' + maxStr;
@@ -1627,35 +1667,107 @@ function updateTempUI(){
   if(tempEl){
     tempEl.textContent = minStr + '...' + maxStr;
     const avg = (_tempMin + _tempMax) / 2;
-    const tempColor = avg < 0 ? '#38bdf8' : avg < 15 ? '#ffd84d' : '#fb923c';
-    tempEl.style.color = tempColor;
+    tempEl.style.color = avg < 0 ? '#38bdf8' : avg < 15 ? '#ffd84d' : '#fb923c';
   }
-  // Өдөр/шөнийн температур ялгаа — min=шөнийн хамгийн бага, max=өдрийн хамгийн их
-  // Дундын утгаас ялгаж харуулна
-  const dayNightEl = document.getElementById('o_tempDayNight');
-  if(dayNightEl){
-    // Шөнийн хамгийн бага ≈ _tempMin, өдрийн хамгийн их ≈ _tempMax
-    // Дундаас хуваах
-    const mid = Math.round((_tempMin + _tempMax) / 2);
-    const nightStr = (_tempMin >= 0 ? '+' : '') + _tempMin + '...' + (mid >= 0 ? '+' : '') + mid;
-    const dayStr = (mid >= 0 ? '+' : '') + mid + '...' + maxStr;
-    document.getElementById('o_tempNightVal').textContent = nightStr;
-    document.getElementById('o_tempDayVal').textContent = dayStr;
-    // Шөнийн өнгө
-    document.getElementById('o_tempNightVal').style.color = _tempMin < 0 ? '#38bdf8' : '#ffd84d';
-    // Өдрийн өнгө
-    document.getElementById('o_tempDayVal').style.color = _tempMax < 0 ? '#38bdf8' : _tempMax < 15 ? '#ffd84d' : '#fb923c';
-  }
+  // Өдөр/шөнийн тусдаа slider UI шинэчлэх
+  updateNightSliderUI();
+  updateDaySliderUI();
+  // Картанд өдөр/шөнийн утга харуулах
+  updateDayNightCardUI();
+}
+
+function updateNightSliderUI(){
+  const track = document.getElementById('nightTempTrack');
+  if(!track) return;
+  const minP = tempToPercent(_nightMin);
+  const maxP = tempToPercent(_nightMax);
+  document.getElementById('nightThumbMin').style.left = minP + '%';
+  document.getElementById('nightThumbMax').style.left = maxP + '%';
+  document.getElementById('nightTempRange').style.left = minP + '%';
+  document.getElementById('nightTempRange').style.width = (maxP - minP) + '%';
+  document.getElementById('nightMinDisplay').textContent = fmtT(_nightMin);
+  document.getElementById('nightMaxDisplay').textContent = fmtT(_nightMax);
+}
+
+function updateDaySliderUI(){
+  const track = document.getElementById('dayTempTrack');
+  if(!track) return;
+  const minP = tempToPercent(_dayMin);
+  const maxP = tempToPercent(_dayMax);
+  document.getElementById('dayThumbMin').style.left = minP + '%';
+  document.getElementById('dayThumbMax').style.left = maxP + '%';
+  document.getElementById('dayTempRange').style.left = minP + '%';
+  document.getElementById('dayTempRange').style.width = (maxP - minP) + '%';
+  document.getElementById('dayMinDisplay').textContent = fmtT(_dayMin);
+  document.getElementById('dayMaxDisplay').textContent = fmtT(_dayMax);
+}
+
+function updateDayNightCardUI(){
+  const nightVal = document.getElementById('o_tempNightVal');
+  const dayVal   = document.getElementById('o_tempDayVal');
+  if(!nightVal || !dayVal) return;
+  const nStr = fmtT(_nightMin) + '...' + fmtT(_nightMax);
+  const dStr = fmtT(_dayMin)   + '...' + fmtT(_dayMax);
+  nightVal.textContent = nStr;
+  dayVal.textContent   = dStr;
+  nightVal.style.color = _nightMin < 0 ? '#38bdf8' : '#ffd84d';
+  dayVal.style.color   = _dayMax  < 0 ? '#38bdf8' : _dayMax < 15 ? '#ffd84d' : '#fb923c';
 }
 
 let _dayNightMode = false;
 function setDayNightMode(on){
   _dayNightMode = on;
-  const single = document.getElementById('o_tempEl');
-  const dayNight = document.getElementById('o_tempDayNight');
-  if(single) single.style.display = on ? 'none' : '';
-  if(dayNight) dayNight.style.display = on ? 'flex' : 'none';
-  updateTempUI();
+  const single    = document.getElementById('o_tempEl');
+  const dayNight  = document.getElementById('o_tempDayNight');
+  const sliders   = document.getElementById('dayNightSliders');
+  const mainSlider= document.getElementById('tempTrack') && document.getElementById('tempTrack').closest('.temp-slider-wrap');
+  if(single)   single.style.display   = on ? 'none' : '';
+  if(dayNight) dayNight.style.display  = on ? 'flex' : 'none';
+  if(sliders)  sliders.style.display   = on ? 'flex' : 'none';
+  if(on){ updateNightSliderUI(); updateDaySliderUI(); updateDayNightCardUI(); }
+  else  { updateTempUI(); }
+}
+
+function initNightDaySliders(){
+  // Шөнийн slider
+  initDualSlider(
+    'nightTempTrack','nightThumbMin','nightThumbMax',
+    ()=>_nightMin, v=>{ _nightMin=v; updateNightSliderUI(); updateDayNightCardUI(); },
+    ()=>_nightMax, v=>{ _nightMax=v; updateNightSliderUI(); updateDayNightCardUI(); }
+  );
+  // Өдрийн slider
+  initDualSlider(
+    'dayTempTrack','dayThumbMin','dayThumbMax',
+    ()=>_dayMin, v=>{ _dayMin=v; updateDaySliderUI(); updateDayNightCardUI(); },
+    ()=>_dayMax, v=>{ _dayMax=v; updateDaySliderUI(); updateDayNightCardUI(); }
+  );
+}
+
+function initDualSlider(trackId, thumbMinId, thumbMaxId, getMin, setMin, getMax, setMax){
+  const track    = document.getElementById(trackId);
+  const thumbMin = document.getElementById(thumbMinId);
+  const thumbMax = document.getElementById(thumbMaxId);
+  if(!track) return;
+  function startDrag(isMin){
+    return function(e){
+      e.preventDefault();
+      const rect = track.getBoundingClientRect();
+      function onMove(ev){
+        const clientX = ev.touches ? ev.touches[0].clientX : ev.clientX;
+        let p = Math.max(0, Math.min(100, (clientX - rect.left) / rect.width * 100));
+        const v = percentToTemp(p);
+        if(isMin){ setMin(Math.min(v, getMax()-1)); }
+        else      { setMax(Math.max(v, getMin()+1)); }
+      }
+      function onUp(){ document.removeEventListener('mousemove',onMove); document.removeEventListener('mouseup',onUp); document.removeEventListener('touchmove',onMove); document.removeEventListener('touchend',onUp); }
+      document.addEventListener('mousemove',onMove); document.addEventListener('mouseup',onUp);
+      document.addEventListener('touchmove',onMove,{passive:false}); document.addEventListener('touchend',onUp);
+    };
+  }
+  thumbMin.addEventListener('mousedown', startDrag(true));
+  thumbMin.addEventListener('touchstart', startDrag(true), {passive:false});
+  thumbMax.addEventListener('mousedown', startDrag(false));
+  thumbMax.addEventListener('touchstart', startDrag(false), {passive:false});
 }
 
 function initTempSlider(){
@@ -2039,8 +2151,10 @@ async function fillFromWeatherAPI() {
 // Дархан-Уул аймгийн голуудын станц ID болон нэрсийн жагсаалт
 // API-с ирэх station id эсвэл нэрд тохирох шүүлтүүр
 const DARKHAN_RIVER_FILTER = {
-  ids:   ['darkhan','хара','khar','508','530','531','2024','2025'],  // станц ID/код
-  names: ['хара гол','хара','darkhan','дархан','онон','kharaa'],    // нэрийн хэсэг
+  ids:   ['darkhan','khar','508','530','531'],  // станц ID/код
+  // Дархан-Уул аймгийн голууд: Харааа гол, Шарын гол
+  // Онон, Чонохарайх = Хэнтий/Дорнод → шүүгдэх ёстой
+  names: ['хара гол','харааа','kharaa','шарын гол','шарын'],
 };
 
 function isDarkhanStation(s){
@@ -2196,6 +2310,7 @@ function updateRiverCardWidget(){
 
 buildCondRows();buildSoumBtns();buildSoumImgBtns();renderHistory();
 initTempSlider();
+initNightDaySliders();
 renderTempHistory();
 buildPhraseLib();
 buildTemplates();
