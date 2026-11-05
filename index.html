@@ -30,6 +30,29 @@ body{font-family:'Roboto',Arial,sans-serif;background:var(--bg-page);min-height:
 
 
 
+/* ── AUTO ALERT DETECTION ── */
+.alert-auto-box{background:linear-gradient(135deg,#fff8e1,#fff3cd);border:1.5px solid #ffe082;border-radius:12px;padding:10px 12px;margin-bottom:10px}
+.alert-detected-list{display:flex;flex-direction:column;gap:6px;margin-bottom:8px}
+.alert-detected-item{
+  display:flex;align-items:center;gap:8px;
+  background:#fff;border-radius:9px;padding:7px 10px;
+  border:1.5px solid #ffe082;cursor:pointer;transition:all .15s;
+}
+.alert-detected-item:hover{background:#fff3cd;border-color:#ffc107}
+.alert-detected-item.applied{background:#e8f5e9;border-color:#a5d6a7}
+.alert-det-icon{font-size:18px;flex-shrink:0}
+.alert-det-text{font-size:11px;font-weight:700;color:#5d4037;line-height:1.3;flex:1}
+.alert-det-lvl{font-size:10px;padding:2px 7px;border-radius:6px;font-weight:800;flex-shrink:0}
+.alert-lvl-high{background:#ffebee;color:#c62828}
+.alert-lvl-med{background:#fff8e1;color:#f57f17}
+.alert-lvl-info{background:#e3f2fd;color:#1565c0}
+.alert-auto-header{font-size:11px;font-weight:800;color:#f57f17;margin-bottom:6px;display:flex;align-items:center;gap:6px}
+.alert-apply-btn{width:100%;padding:6px;background:#f57f17;color:#fff;border:none;border-radius:9px;font-size:12px;font-weight:800;cursor:pointer;font-family:'Nunito',Arial,sans-serif;transition:background .15s}
+.alert-apply-btn:hover{background:#e65100}
+.alert-none-msg{font-size:11px;color:#90a4ae;text-align:center;padding:6px 0;font-weight:600}
+.alert-scan-btn{font-size:11px;padding:4px 12px;border-radius:7px;border:1.5px solid #ffe082;background:#fff;cursor:pointer;font-family:'Nunito',Arial,sans-serif;font-weight:700;color:#f57f17;transition:all .15s;margin-left:auto}
+.alert-scan-btn:hover{background:#f57f17;color:#fff;border-color:#f57f17}
+
 /* ── RIVER DATA ── */
 .river-bar{background:linear-gradient(135deg,#e8f4fd,#dceefb);border:1.5px solid #90caf9;border-radius:12px;padding:10px 14px;margin-bottom:10px}
 .river-title{font-size:12px;font-weight:800;color:#1565c0;margin-bottom:8px;display:flex;align-items:center;gap:6px}
@@ -577,10 +600,25 @@ input:focus,select:focus{border-color:var(--brand-mid)}
   <div class="card">
     <div class="card-header" onclick="toggleCard(this)">
       <span class="card-title">⚠️ Анхааруулга</span>
+      <button class="alert-scan-btn" onclick="event.stopPropagation();scanAndShowAlerts()" title="Нөхцлөөс автоматаар илрүүлэх">🔍 Автомат илрүүлэх</button>
       <span class="card-chevron">▼</span>
     </div>
     <div class="card-body">
-      <input type="text" id="o_alert" placeholder="Хоосон үлдээвэл харагдахгүй">
+      <!-- Автомат илрүүлгийн хэсэг -->
+      <div id="alertAutoBox" style="display:none" class="alert-auto-box">
+        <div class="alert-auto-header">🤖 Илэрсэн аюултай нөхцлүүд</div>
+        <div class="alert-detected-list" id="alertDetectedList"></div>
+        <button class="alert-apply-btn" onclick="applyTopAlert()">✅ Хамгийн чухлыг карт дээр нэмэх</button>
+      </div>
+      <div id="alertNoneMsg" style="display:none" class="alert-none-msg">✅ Аюултай нөхцөл илрэгдсэнгүй</div>
+
+      <!-- Гараар оруулах -->
+      <div style="font-size:11px;font-weight:700;color:var(--text-muted);margin-bottom:5px;margin-top:4px">Гараар оруулах (эсвэл дээрээс сонгоно)</div>
+      <input type="text" id="o_alert" placeholder="Хоосон үлдээвэл харагдахгүй" oninput="updateBottomRight(this.value,'')">
+      <div style="display:flex;gap:6px;margin-top:6px;flex-wrap:wrap">
+        <button class="btn-s" onclick="document.getElementById('o_alert').value='';updateBottomRight('','')">🗑 Арилгах</button>
+        <span style="font-size:10px;color:var(--text-muted);font-weight:600;align-self:center">Сонгосноор карт дээр шууд гарна</span>
+      </div>
     </div>
   </div>
 
@@ -1024,6 +1062,205 @@ const WSVG={
 };
 function getWIcon(icon){return WSVG[icon]||`<span style="font-size:20px">${icon}</span>`;}
 
+// ══════════════════════════════════════════
+// АВТОМАТ АЮУЛЫН СЭРЭМЖЛҮҮЛЭГ
+// ══════════════════════════════════════════
+
+// Аюулын дүрмүүд — {id, check(conditions,tempMin,tempMax,riverStations), icon, text, level}
+const ALERT_RULES = [
+  // ⚡ Аянга
+  {
+    id: 'thunder',
+    icon: '⚡',
+    level: 'high',
+    label: 'Аянгат цаг агаар',
+    text: 'Аянгатай цаг агаарт гадаа явахдаа болгоомжтой байна уу! Нээлттэй газраас холдоорой.',
+    check: (conds) => conds.some(c => ['⛈️','🌩️'].includes(c.icon) ||
+      /аянга|дуу цахилгаан|thunder/i.test(c.text))
+  },
+  // 🌪️ Шуурга / хүчтэй салхи
+  {
+    id: 'storm',
+    icon: '🌪️',
+    level: 'high',
+    label: 'Хүчтэй шуурга',
+    text: 'Хүчтэй шуурга буюу салхи шиуурганаас болгоомжтой байна уу! Гадаа явахаас зайлсхийнэ үү.',
+    check: (conds) => conds.some(c =>
+      /шуурга|storm|hurricane|хар салхи|хүчтэй салхи/i.test(c.text))
+  },
+  // ❄️ Цасан шуурга
+  {
+    id: 'blizzard',
+    icon: '❄️',
+    level: 'high',
+    label: 'Цасан шуурга',
+    text: 'Цасан шуурганд зам тээврийн осоос болгоомжтой! Аялал зорчил хойшлуулна уу.',
+    check: (conds) => conds.some(c =>
+      /цасан шуурга|blizzard|хар цас/i.test(c.text))
+  },
+  // 🌊 Үер / голын аюул
+  {
+    id: 'flood',
+    icon: '🌊',
+    level: 'high',
+    label: 'Үерийн аюул',
+    text: 'Голын усны түвшин аюулын хэмжээнд хүрлээ! Гол горхины эргээс холдоорой.',
+    check: (conds, tMin, tMax, rivers) => {
+      const condFlood = conds.some(c => /үер|flood/i.test(c.text));
+      const riverDanger = rivers && rivers.some(s => s.waterLevel != null && s.floodThreshold != null && s.waterLevel >= s.floodThreshold);
+      return condFlood || riverDanger;
+    }
+  },
+  // 🌨️ Хүчтэй хур цас
+  {
+    id: 'heavysnow',
+    icon: '🌨️',
+    level: 'med',
+    label: 'Хүчтэй цас',
+    text: 'Хүчтэй цас орж байна. Зам харгуй гулгамтгай байна, жолоодоход болгоомжтой байгаарай.',
+    check: (conds) => conds.some(c =>
+      /хүчтэй цас|их цас|heavy snow/i.test(c.text))
+  },
+  // 🧊 Хүйтний аюул
+  {
+    id: 'extremecold',
+    icon: '🥶',
+    level: 'high',
+    label: 'Хүчтэй хүйтэн',
+    text: 'Маш хүчтэй хүйтэн байна. Гадуур гарахдаа дулаан хувцасла, хөлдөлтөөс болгоомжтой байгаарай.',
+    check: (conds, tMin) => tMin !== null && tMin <= -25
+  },
+  // ❄️ Хүйтэн сэрэмжлүүлэг
+  {
+    id: 'cold',
+    icon: '🌡️',
+    level: 'med',
+    label: 'Хүйтний сэрэмжлүүлэг',
+    text: 'Хүйтэн цаг агаар байна. Хүүхэд, ахмадуудад онцгой анхаарал тавина уу.',
+    check: (conds, tMin) => tMin !== null && tMin <= -20 && tMin > -25
+  },
+  // 🌫️ Манан
+  {
+    id: 'fog',
+    icon: '🌫️',
+    level: 'info',
+    label: 'Нягт манан',
+    text: 'Нягт манан байна. Жолооч нар хурдаа бууруулж, гэрлийг асааж явна уу.',
+    check: (conds) => conds.some(c => ['🌫️'].includes(c.icon) ||
+      /манан|fog/i.test(c.text))
+  },
+  // 🌧️ Аадар бороо
+  {
+    id: 'heavyrain',
+    icon: '🌧️',
+    level: 'info',
+    label: 'Аадар бороо',
+    text: 'Аадар бороо орж байна. Хотын гудамжинд усны хуримтлалаас болгоомжтой байгаарай.',
+    check: (conds) => conds.some(c =>
+      /аадар|их бороо|heavy rain/i.test(c.text))
+  },
+  // 🌊 Голын түвшин өсч байна
+  {
+    id: 'riverrising',
+    icon: '📈',
+    level: 'info',
+    label: 'Голын түвшин өсч байна',
+    text: 'Голын усны түвшин нэмэгдэж байна. Голын эргийн байдалд анхаарал тавина уу.',
+    check: (conds, tMin, tMax, rivers) =>
+      rivers && rivers.some(s =>
+        s.trend === 'RISING' &&
+        s.waterLevel != null && s.normalLevel != null &&
+        s.waterLevel >= s.normalLevel * 1.1 &&
+        !(s.floodThreshold != null && s.waterLevel >= s.floodThreshold)
+      )
+  },
+];
+
+// Температурын min/max задлах
+function parseTemps(){
+  const tempStr = gv('o_temp') || '';
+  const nums = tempStr.match(/-?\d+/g);
+  if(!nums || !nums.length) return {tMin: null, tMax: null};
+  const vals = nums.map(Number);
+  return {tMin: Math.min(...vals), tMax: Math.max(...vals)};
+}
+
+// Илэрсэн сэрэмжлүүлгийн state
+let _detectedAlerts = [];
+
+function detectAlerts(){
+  // condRows-аас синк хийх
+  document.querySelectorAll('#condRows .cond-row').forEach((row,i)=>{
+    const sel=row.querySelector('select'); const inp=row.querySelector('input[type=text]');
+    if(sel&&conditions[i]) conditions[i].icon=sel.value;
+    if(inp&&conditions[i]) conditions[i].text=inp.value;
+  });
+
+  const {tMin, tMax} = parseTemps();
+  const rivers = _riverStationsData;
+
+  _detectedAlerts = ALERT_RULES
+    .filter(rule => rule.check(conditions, tMin, tMax, rivers))
+    .sort((a,b) => {
+      const order = {high:0, med:1, info:2};
+      return order[a.level] - order[b.level];
+    });
+
+  return _detectedAlerts;
+}
+
+function scanAndShowAlerts(){
+  const found = detectAlerts();
+  const box = document.getElementById('alertAutoBox');
+  const list = document.getElementById('alertDetectedList');
+  const noneMsg = document.getElementById('alertNoneMsg');
+
+  if(!found.length){
+    if(box) box.style.display = 'none';
+    if(noneMsg) { noneMsg.style.display = 'block'; setTimeout(()=>{ noneMsg.style.display='none'; }, 3000); }
+    return;
+  }
+
+  if(noneMsg) noneMsg.style.display = 'none';
+  if(box) box.style.display = 'block';
+
+  if(list){
+    list.innerHTML = found.map((a,i) => `
+      <div class="alert-detected-item" id="alertItem_${i}" onclick="applyAlert(${i})">
+        <span class="alert-det-icon">${a.icon}</span>
+        <div class="alert-det-text">
+          <span style="font-size:10px;font-weight:800;color:#f57f17;display:block;margin-bottom:2px">${a.label}</span>
+          ${a.text}
+        </div>
+        <span class="alert-det-lvl ${a.level==='high'?'alert-lvl-high':a.level==='med'?'alert-lvl-med':'alert-lvl-info'}">${a.level==='high'?'⚠️ Яаралтай':a.level==='med'?'⚡ Анхаар':'ℹ️ Мэдэгдэл'}</span>
+      </div>
+    `).join('');
+  }
+
+  // Карт нээгдэж байгаа эсэхийг шалгах
+  const cardBody = box.closest('.card-body');
+  if(cardBody && !cardBody.classList.contains('open')){
+    cardBody.classList.add('open');
+  }
+}
+
+function applyAlert(idx){
+  if(!_detectedAlerts[idx]) return;
+  const a = _detectedAlerts[idx];
+  const inp = document.getElementById('o_alert');
+  if(inp){ inp.value = a.text; }
+  updateBottomRight(a.text, '');
+
+  // Визуаль feedback
+  const item = document.getElementById('alertItem_'+idx);
+  if(item){ item.classList.add('applied'); item.querySelector('.alert-det-lvl').textContent = '✅ Нэмэгдлээ'; }
+}
+
+function applyTopAlert(){
+  if(!_detectedAlerts.length) return;
+  applyAlert(0);
+}
+
 function buildCondRows(){
   const cont=document.getElementById('condRows');cont.innerHTML='';
   const iconKeys=Object.keys(WSVG);
@@ -1142,6 +1379,31 @@ function generate1day(){
   const sun=calcSun(sunDate,_sunCoords.lat,_sunCoords.lng);
   document.getElementById('o_sunriseEl').textContent=sun.rise;
   updateBottomRight(gv('o_alert'),sun.set);
+
+  // Автомат аюулын сэрэмжлүүлэг шалгах (дуугарахгүйгээр)
+  const autoFound = detectAlerts();
+  const alertCard = document.querySelector('.card-title');
+  // Header badge шинэчлэх
+  document.querySelectorAll('.card-title').forEach(t => {
+    if(t.textContent.includes('Анхааруулга')){
+      const badge = t.parentElement.querySelector('.alert-auto-badge') || (() => {
+        const b = document.createElement('span');
+        b.className = 'alert-auto-badge';
+        b.style.cssText = 'font-size:10px;font-weight:800;margin-left:4px;padding:1px 6px;border-radius:6px';
+        t.parentElement.insertBefore(b, t.nextSibling);
+        return b;
+      })();
+      if(autoFound.length){
+        const hasHigh = autoFound.some(a=>a.level==='high');
+        badge.textContent = `${autoFound.length} илэрсэн`;
+        badge.style.background = hasHigh ? '#ffebee' : '#fff8e1';
+        badge.style.color = hasHigh ? '#c62828' : '#f57f17';
+      } else {
+        badge.textContent = '';
+        badge.style.background = 'transparent';
+      }
+    }
+  });
 
   // city photos
   const sp=document.getElementById('o_soumPhoto');
