@@ -46,6 +46,37 @@ body{font-family:'Roboto',Arial,sans-serif;background:var(--bg-page);min-height:
 .river-fetch-btn{font-size:11px;padding:4px 10px;border-radius:7px;border:1.5px solid #90caf9;background:#fff;cursor:pointer;font-family:'Nunito',Arial,sans-serif;font-weight:700;color:#1565c0;transition:all .15s;margin-left:auto}
 .river-fetch-btn:hover{background:#1565c0;color:#fff}
 
+/* ── RIVER CARD WIDGET (карт дотор) ── */
+.ig-river-widget{
+  margin-top:8px;width:100%;
+  background:rgba(10,30,80,0.55);
+  border:1.5px solid rgba(144,194,249,0.35);
+  border-radius:14px;padding:8px 12px;
+  display:none; /* анхдагч нуусан */
+}
+.ig-river-widget.visible{display:block}
+.ig-river-wlabel{
+  font-size:10px;font-weight:800;color:rgba(144,194,249,0.9);
+  letter-spacing:.6px;text-transform:uppercase;margin-bottom:5px;
+  display:flex;align-items:center;gap:5px
+}
+.ig-river-rows{display:flex;flex-direction:column;gap:4px}
+.ig-river-row{
+  display:flex;align-items:center;justify-content:space-between;
+  font-size:11px;font-weight:800;
+}
+.ig-river-name{color:rgba(255,255,255,0.75);font-size:10px;font-weight:700;flex:1}
+.ig-river-val{color:#90e0ef;font-size:16px;font-weight:900;line-height:1}
+.ig-river-unit{color:rgba(255,255,255,0.5);font-size:9px;font-weight:700;margin-left:2px}
+.ig-river-status-dot{width:7px;height:7px;border-radius:50%;margin-left:6px;flex-shrink:0}
+.ig-river-status-dot.safe{background:#4ade80}
+.ig-river-status-dot.warn{background:#fbbf24}
+.ig-river-status-dot.danger{background:#f87171}
+/* Facebook горимд */
+.ig-card.fb-mode .ig-river-widget{padding:5px 8px;margin-top:5px}
+.ig-card.fb-mode .ig-river-val{font-size:14px}
+.ig-card.fb-mode .ig-river-wlabel{font-size:9px;margin-bottom:3px}
+
 /* ── QUICK TAGS ── */
 .quick-tags{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:8px}
 .qtag{font-size:10px;padding:3px 9px;border-radius:6px;border:1.5px solid #d8e4f0;background:#f4f8fd;cursor:pointer;font-family:'Nunito',Arial,sans-serif;font-weight:700;color:#1a2535;transition:all .15s}
@@ -636,6 +667,14 @@ input:focus,select:focus{border-color:var(--brand-mid)}
       <span class="card-chevron">▼</span>
     </div>
     <div class="card-body">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;padding:0 2px">
+        <label style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:700;color:#1565c0;cursor:pointer">
+          <input type="checkbox" id="riverShowOnCard" onchange="setRiverOnCard(this.checked)"
+            style="width:15px;height:15px;cursor:pointer;accent-color:#1565c0">
+          Карт дээр харуулах
+        </label>
+        <span id="riverCardStatus" style="font-size:11px;color:#90a4ae;font-weight:600"></span>
+      </div>
       <div id="riverStations"><p style="font-size:12px;color:var(--text-muted);text-align:center;padding:16px 0">🔄 "Татах" товч дарж голын мэдээ ачааллана</p></div>
     </div>
   </div>
@@ -704,6 +743,11 @@ input:focus,select:focus{border-color:var(--brand-mid)}
                 <div class="ig-temp-day" id="o_tempDayEl"><span class="tdn-label">☀️ Өдөр</span><span class="tdn-val" id="o_tempDayVal">—</span></div>
                 <div class="ig-temp-night" id="o_tempNightEl"><span class="tdn-label">🌙 Шөнө</span><span class="tdn-val" id="o_tempNightVal">—</span></div>
               </div>
+            </div>
+            <!-- Голын усны мэдээ mini-widget -->
+            <div class="ig-river-widget" id="o_riverWidget">
+              <div class="ig-river-wlabel">🌊 Голын түвшин</div>
+              <div class="ig-river-rows" id="o_riverWidgetRows"></div>
             </div>
           </div>
           <div class="ig-right">
@@ -1756,39 +1800,86 @@ async function fetchRiverData(){
   }
 }
 
+// Голын мэдээний state
+let _riverStationsData = [];
+let _riverOnCard = false;
+
+function riverStatusInfo(s){
+  if(s.waterLevel != null && s.floodThreshold != null && s.waterLevel >= s.floodThreshold)
+    return {cls:'danger', txt:'⚠️ Аюул', dotCls:'danger'};
+  if(s.waterLevel != null && s.normalLevel != null && s.waterLevel >= s.normalLevel * 1.2)
+    return {cls:'warn', txt:'🟡 Анхаар', dotCls:'warn'};
+  return {cls:'safe', txt:'🟢 Хэвийн', dotCls:'safe'};
+}
+
 function renderRiverData(stations){
   const wrap = document.getElementById('riverStations');
   if(!wrap) return;
 
-  wrap.innerHTML = stations.map(s => {
-    // Аюулын зэрэглэл тодорхойлох
-    let statusCls, statusTxt;
-    const st = (s.status || '').toUpperCase();
-    if(s.waterLevel >= s.floodThreshold){
-      statusCls = 'river-danger'; statusTxt = '⚠️ Аюулын зэрэглэл';
-    } else if(s.waterLevel >= s.normalLevel * 1.2){
-      statusCls = 'river-warn'; statusTxt = '🟡 Үерийн зэрэглэл';
-    } else {
-      statusCls = 'river-safe'; statusTxt = '🟢 Хэвийн';
-    }
+  _riverStationsData = stations;
 
+  wrap.innerHTML = stations.map(s => {
+    const {cls:statusCls, txt:statusTxt} = riverStatusInfo(s);
     const trendIcon = s.trend === 'RISING' ? '↑' : s.trend === 'FALLING' ? '↓' : '→';
     const trendColor = s.trend === 'RISING' ? '#e17055' : s.trend === 'FALLING' ? '#00b894' : '#90a4ae';
 
     return `<div class="river-card">
       <div class="river-name">🌊 ${s.name || s.id}</div>
-      <div class="river-h">${s.waterLevel}<span> см</span>
+      <div class="river-h">${s.waterLevel ?? '—'}<span> см</span>
         <span style="font-size:13px;color:${trendColor};margin-left:6px">${trendIcon}</span>
       </div>
       <div class="river-meta">💧 Усны хэм: ${s.waterTemp ?? '—'}°C · Урсац: ${s.flowRate ?? '—'} м³/с</div>
       <div class="river-meta">Хэвийн: ${s.normalLevel ?? '—'} см · Аюулын: ${s.floodThreshold ?? '—'} см</div>
-      <div class="river-status ${statusCls}">${statusTxt}</div>
+      <div class="river-status river-${statusCls}">${statusTxt}</div>
     </div>`;
   }).join('');
 
-  // Нөхцлийн жагсаалтад мөр нэмэх санал
-  const btn = document.querySelector('.river-fetch-btn');
-  if(btn) btn.textContent = '🔄 Шинэчлэх';
+  // Карт дээр харуулах checkbox идэвхтэй бол шинэчлэх
+  updateRiverCardWidget();
+
+  // Статусын мэдээлэл header-д харуулах
+  const badge = document.getElementById('riverStatusBadge');
+  if(badge && stations.length){
+    const hasWarn = stations.some(s => riverStatusInfo(s).dotCls !== 'safe');
+    badge.textContent = hasWarn ? '⚠️' : '✅';
+    badge.style.color = hasWarn ? '#c62828' : '#2e7d32';
+  }
+}
+
+// Карт дээр голын widget харуулах/нуух
+function setRiverOnCard(on){
+  _riverOnCard = on;
+  updateRiverCardWidget();
+  const status = document.getElementById('riverCardStatus');
+  if(status) status.textContent = on ? (_riverStationsData.length ? '' : '— эхлээд "Татах" товч дарна уу') : '';
+}
+
+function updateRiverCardWidget(){
+  const widget = document.getElementById('o_riverWidget');
+  const rowsEl = document.getElementById('o_riverWidgetRows');
+  if(!widget || !rowsEl) return;
+
+  if(!_riverOnCard || !_riverStationsData.length){
+    widget.classList.remove('visible');
+    return;
+  }
+
+  // Зөвхөн Дархан-уул аймагт хамаатай голуудыг шүүх (эсвэл бүгдийг харуулах)
+  const toShow = _riverStationsData.slice(0, 3); // хамгийн ихдээ 3 гол
+
+  rowsEl.innerHTML = toShow.map(s => {
+    const {dotCls} = riverStatusInfo(s);
+    const trendIcon = s.trend === 'RISING' ? '↑' : s.trend === 'FALLING' ? '↓' : '→';
+    const name = (s.name || s.id || 'Гол').replace(/станц|station/gi,'').trim();
+    return `<div class="ig-river-row">
+      <span class="ig-river-name">${name}</span>
+      <span class="ig-river-val">${s.waterLevel ?? '—'}<span class="ig-river-unit">см</span></span>
+      <span style="font-size:11px;color:#90e0ef;margin-left:4px;font-weight:900">${trendIcon}</span>
+      <span class="ig-river-status-dot ${dotCls}"></span>
+    </div>`;
+  }).join('');
+
+  widget.classList.add('visible');
 }
 
 buildCondRows();buildSoumBtns();buildSoumImgBtns();renderHistory();
