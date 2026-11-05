@@ -332,6 +332,22 @@ input:focus,select:focus{border-color:var(--brand-mid)}
 .ig-weekday{font-size:18px;font-weight:900;color:var(--pal-accent);letter-spacing:2px;text-transform:uppercase;margin-top:10px}
 .ig-temp{font-size:46px;font-weight:900;color:var(--pal-accent);text-shadow:0 3px 16px rgba(0,0,0,.4);line-height:1.1;text-align:center;width:100%;background:rgba(15,35,75,0.55);border:1.5px solid rgba(255,255,255,0.25);border-radius:18px;padding:14px 16px;box-shadow:0 6px 28px rgba(0,0,0,0.35),inset 0 1px 0 rgba(255,255,255,0.15);}
 
+/* TEMP DAY/NIGHT block */
+.ig-temp-block{width:100%}
+.ig-temp-day-night{display:flex;flex-direction:column;gap:6px;width:100%}
+.ig-temp-day,.ig-temp-night{
+  display:flex;align-items:center;justify-content:space-between;
+  background:rgba(15,35,75,0.55);border:1.5px solid rgba(255,255,255,0.2);
+  border-radius:14px;padding:8px 14px;
+}
+.tdn-label{font-size:12px;font-weight:700;color:rgba(255,255,255,0.75);letter-spacing:.5px}
+.tdn-val{font-size:30px;font-weight:900;line-height:1;text-shadow:0 2px 10px rgba(0,0,0,.4)}
+.ig-temp-day .tdn-val{color:#fb923c}
+.ig-temp-night .tdn-val{color:#38bdf8}
+.ig-card.fb-mode .tdn-val{font-size:22px}
+.ig-card.fb-mode .tdn-label{font-size:10px}
+.ig-card.fb-mode .ig-temp-day,.ig-card.fb-mode .ig-temp-night{padding:5px 10px;border-radius:10px}
+
 /* RIGHT */
 .ig-right{
   position:relative;z-index:5;
@@ -370,7 +386,8 @@ input:focus,select:focus{border-color:var(--brand-mid)}
 .ig-cond-bubble svg{width:28px;height:28px}
 .ig-cond-text{font-size:17px;font-weight:700;color:#1a2535;line-height:1.5;padding-top:4px}
 .ig-cond-text b{color:#1a5fa5;font-weight:800}
-.ig-cond-text .hot{color:#d45c00;font-weight:800}
+.ig-cond-text .hot{color:#fb923c;font-weight:800}
+.ig-cond-text .cold{color:#38bdf8;font-weight:800}
 
 /* Contact info block */
 .ig-contact{
@@ -388,29 +405,38 @@ input:focus,select:focus{border-color:var(--brand-mid)}
 
 
 /* FACEBOOK MODE — 1200×630 */
-.ig-card.fb-mode .ig-topbar{height:80px;padding:0 28px}
-.ig-card.fb-mode .ig-logo{width:64px;height:64px}
-.ig-card.fb-mode .ig-logo img{width:60px;height:60px}
-.ig-card.fb-mode .ig-maintitle{font-size:26px}
-.ig-card.fb-mode .ig-subtitle{font-size:12px;margin-top:4px}
-.ig-card.fb-mode .ig-body{top:80px;bottom:70px;grid-template-columns:230px 1fr}
-.ig-card.fb-mode .ig-day{font-size:72px}
-.ig-card.fb-mode .ig-month{font-size:12px}
-.ig-card.fb-mode .ig-weekday{font-size:13px;margin-top:6px}
-.ig-card.fb-mode .ig-temp{font-size:32px;padding:10px 12px}
-.ig-card.fb-mode .ig-glass-date{padding:12px 14px 10px}
-.ig-card.fb-mode .ig-left{padding:16px 20px;gap:10px}
-.ig-card.fb-mode .ig-right{padding:14px 18px 14px}
-.ig-card.fb-mode .ig-soum-photo{height:120px;margin-bottom:10px}
-.ig-card.fb-mode .ig-cond-list{gap:8px}
-.ig-card.fb-mode .ig-cond-bubble{width:36px;height:36px}
-.ig-card.fb-mode .ig-cond-bubble svg{width:20px;height:20px}
-.ig-card.fb-mode .ig-cond-text{font-size:13px;padding-top:2px}
-.ig-card.fb-mode .ig-region-badge{font-size:12px;padding:5px 14px;margin-bottom:10px;margin-top:2px}
-.ig-card.fb-mode .ig-bottom{height:70px;padding:0 28px}
-.ig-card.fb-mode .ig-sun-text strong{font-size:16px}
-.ig-card.fb-mode .ig-contact{padding:7px 10px}
-.ig-card.fb-mode .ig-contact p{font-size:10px}
+.ig-card.fb-mode .ig-topbar{height:76px;padding:0 28px}
+.ig-card.fb-mode .ig-logo{width:56px;height:56px}
+.ig-card.fb-mode .ig-logo img{width:52px;height:52px}
+.ig-card.fb-mode .ig-maintitle{font-size:22px}
+.ig-card.fb-mode .ig-subtitle{font-size:11px;margin-top:3px}
+.ig-card.fb-mode .ig-body{top:76px;bottom:60px;grid-template-columns:210px 1fr}
+.ig-card.fb-mode .ig-day{font-size:70px}
+.ig-card.fb-mode .ig-month{font-size:11px}
+.ig-card.fb-mode .ig-weekday{font-size:12px;margin-top:4px}
+.ig-card.fb-mode .ig-temp{font-size:28px;padding:8px 10px}
+.ig-card.fb-mode .ig-glass-date{padding:10px 12px 8px}
+.ig-card.fb-mode .ig-left{padding:14px 16px;gap:8px}
+/* RIGHT — 2 column grid горим */
+.ig-card.fb-mode .ig-right{padding:10px 14px;display:grid;grid-template-rows:auto auto 1fr auto;gap:0}
+.ig-card.fb-mode .ig-soum-photo{height:90px;margin-bottom:6px;width:100%;object-fit:cover;border-radius:8px}
+.ig-card.fb-mode .ig-region-badge{font-size:11px;padding:4px 12px;margin-bottom:6px;margin-top:0}
+/* нөхцөлийн жагсаалт — 2×2 grid */
+.ig-card.fb-mode .ig-cond-list{
+  display:grid;grid-template-columns:1fr 1fr;gap:5px 10px;
+  align-content:start;overflow:hidden;
+}
+.ig-card.fb-mode .ig-cond-item{align-items:center}
+.ig-card.fb-mode .ig-cond-bubble{width:30px;height:30px;flex-shrink:0}
+.ig-card.fb-mode .ig-cond-bubble svg{width:16px;height:16px}
+.ig-card.fb-mode .ig-cond-text{font-size:11px;padding-top:1px;line-height:1.3}
+/* хаягийн блок — нэг мөр */
+.ig-card.fb-mode .ig-contact{padding:5px 8px;margin-top:4px}
+.ig-card.fb-mode .ig-contact-row{display:none}
+.ig-card.fb-mode .ig-contact-inline{display:flex!important;flex-wrap:wrap;gap:6px 14px;align-items:center}
+.ig-card.fb-mode .ig-bottom{height:60px;padding:0 24px}
+.ig-card.fb-mode .ig-sun-text strong{font-size:14px}
+.ig-card.fb-mode .ig-sun-text{font-size:11px}
 
 /* BOTTOM BAR */
 .ig-bottom-inner-pad{padding:0 20px;}
@@ -506,6 +532,11 @@ input:focus,select:focus{border-color:var(--brand-mid)}
         </div>
         <div class="temp-hist" id="tempHistWrap"></div>
         <input type="hidden" id="o_temp" value="+18...+28">
+        <!-- Өдөр/шөнийн ялгаа харуулах toggle -->
+        <label style="display:flex;align-items:center;gap:6px;margin-top:6px;font-size:11px;font-weight:700;color:#6b7fa0;cursor:pointer">
+          <input type="checkbox" id="toggleDayNight" onchange="setDayNightMode(this.checked)" style="accent-color:#1a5fa5">
+          ☀️🌙 Өдөр / шөнийн температур ялгаж харуулах
+        </label>
       </div>
     </div>
     </div><!-- /card-body -->
@@ -666,7 +697,14 @@ input:focus,select:focus{border-color:var(--brand-mid)}
                 <div class="ig-weekday" id="o_weekdayEl">—</div>
               </div>
             </div>
-            <div class="ig-temp" id="o_tempEl">—</div>
+            <!-- Температур блок: өдөр/шөний 2 эгнээ -->
+            <div class="ig-temp-block" id="o_tempBlock">
+              <div class="ig-temp" id="o_tempEl">—</div>
+              <div class="ig-temp-day-night" id="o_tempDayNight" style="display:none">
+                <div class="ig-temp-day" id="o_tempDayEl"><span class="tdn-label">☀️ Өдөр</span><span class="tdn-val" id="o_tempDayVal">—</span></div>
+                <div class="ig-temp-night" id="o_tempNightEl"><span class="tdn-label">🌙 Шөнө</span><span class="tdn-val" id="o_tempNightVal">—</span></div>
+              </div>
+            </div>
           </div>
           <div class="ig-right">
             <img id="o_soumPhoto" class="ig-soum-photo" src="" alt="">
@@ -677,6 +715,12 @@ input:focus,select:focus{border-color:var(--brand-mid)}
               <div class="ig-contact-row">📞 <span>Утас:</span> 70374161</div>
               <div class="ig-contact-row">✉️ <span>Мэйл:</span> info@darkhan-uul.namem.gov.mn</div>
               <div class="ig-contact-row">🌐 <span>Веб:</span> darkhan-uul.weather.gov.mn</div>
+              <!-- Facebook нэг мөрийн хаяг -->
+              <div class="ig-contact-inline" style="display:none;font-size:10px;color:#1a2535;font-weight:600;line-height:1.4">
+                <span>📍 Дархан-Уул аймаг УЦУОШТ</span>
+                <span>📞 70374161</span>
+                <span>🌐 darkhan-uul.weather.gov.mn</span>
+              </div>
             </div>
           </div>
         </div>
@@ -973,11 +1017,46 @@ const CH_PALETTES=[
   {bg1:'#2b2d42',bg2:'#457b9d',accent:'#a8dadc',bar1:'#2b2d42',bar2:'#1d3557',label:'Slate'},
   {bg1:'#370617',bg2:'#6a040f',accent:'#ffba08',bar1:'#370617',bar2:'#9d0208',label:'Fire'},
 ];
+// Улирлын палитр — сараар нь автомат сонгох
+const SEASON_PALETTES = {
+  winter: [ // 11,12,1,2,3
+    {bg1:'#0c1e3c',bg2:'#1a3f7a',accent:'#90e0ef',bar1:'#0c1e3c',bar2:'#1a3f7a',label:'Өвлийн шөнө'},
+    {bg1:'#0a1628',bg2:'#0d2d5a',accent:'#48cae4',bar1:'#0a1628',bar2:'#0d3570',label:'Цасан цэнхэр'},
+    {bg1:'#1b2838',bg2:'#2d4a6b',accent:'#a8dadc',bar1:'#1b2838',bar2:'#2d4a6b',label:'Мөсний хөх'},
+  ],
+  spring: [ // 4,5
+    {bg1:'#1a2f1a',bg2:'#2d6b3a',accent:'#b5e48c',bar1:'#1a2f1a',bar2:'#2d6b3a',label:'Хавар'},
+    {bg1:'#0f3a1a',bg2:'#1a6b40',accent:'#a8e6cf',bar1:'#0f3a1a',bar2:'#1a6b40',label:'Нахиалах'},
+  ],
+  summer: [ // 6,7,8
+    {bg1:'#1a2050',bg2:'#1565c0',accent:'#ffd84d',bar1:'#1a2050',bar2:'#0d47a1',label:'Зуны өдөр'},
+    {bg1:'#0d2459',bg2:'#1255a0',accent:'#ffd84d',bar1:'#0d2459',bar2:'#1a4a8a',label:'Ocean Blue'},
+    {bg1:'#1b4332',bg2:'#2d6a4f',accent:'#95d5b2',bar1:'#1b4332',bar2:'#2d6a4f',label:'Зун ногоон'},
+  ],
+  autumn: [ // 9,10
+    {bg1:'#3d1a00',bg2:'#7b3800',accent:'#ffb347',bar1:'#3d1a00',bar2:'#7b3800',label:'Намрын алт'},
+    {bg1:'#2c1810',bg2:'#6b2d0d',accent:'#ff9f43',bar1:'#2c1810',bar2:'#6b2d0d',label:'Навчны улаан'},
+  ],
+};
+
+function getSeasonByMonth(monthStr){
+  const idx = MN_MONTHS.indexOf(monthStr);
+  const m = idx >= 0 ? idx + 1 : new Date().getMonth() + 1;
+  if([11,12,1,2,3].includes(m)) return 'winter';
+  if([4,5].includes(m)) return 'spring';
+  if([6,7,8].includes(m)) return 'summer';
+  return 'autumn';
+}
+
 let _lastPalIdx=-1;
-function applyRandomPalette(){
+function applyRandomPalette(forceSeason){
+  const monthVal = gv('o_month');
+  const season = forceSeason || (monthVal ? getSeasonByMonth(monthVal) : null);
+  let pool = season ? SEASON_PALETTES[season] : CH_PALETTES;
+  if(!pool || !pool.length) pool = CH_PALETTES;
   let idx;
-  do{idx=Math.floor(Math.random()*CH_PALETTES.length);}while(idx===_lastPalIdx&&CH_PALETTES.length>1);
-  _lastPalIdx=idx;const p=CH_PALETTES[idx];
+  do{idx=Math.floor(Math.random()*pool.length);}while(idx===_lastPalIdx&&pool.length>1);
+  _lastPalIdx=idx;const p=pool[idx];
   const rs=document.documentElement.style;
   rs.setProperty('--pal-bg1',p.bg1);rs.setProperty('--pal-bg2',p.bg2);
   rs.setProperty('--pal-accent',p.accent);rs.setProperty('--pal-bar1',p.bar1);rs.setProperty('--pal-bar2',p.bar2);
@@ -995,6 +1074,8 @@ function generate1day(){
   document.getElementById('o_weekdayEl').textContent=gv('o_weekday')||'—';
   document.getElementById('o_tempEl').textContent=gv('o_temp')||'—';
   document.getElementById('o_regionEl').textContent=gv('o_region')||'—';
+  // Өдөр/шөнийн температур ялгаатай эсэхийг шалгаж харуулах
+  updateTempUI();
 
   // sync conditions from rows
   document.querySelectorAll('#condRows .cond-row').forEach((row,i)=>{
@@ -1235,9 +1316,40 @@ function updateTempUI(){
   document.getElementById('tempMinDisplay').textContent = minStr;
   document.getElementById('tempMaxDisplay').textContent = maxStr;
   document.getElementById('o_temp').value = minStr + '...' + maxStr;
-  // Карт дээр шууд live update
+  // Карт дээр шууд live update + өнгө (хүйтэн/дулаан)
   const tempEl = document.getElementById('o_tempEl');
-  if(tempEl) tempEl.textContent = minStr + '...' + maxStr;
+  if(tempEl){
+    tempEl.textContent = minStr + '...' + maxStr;
+    const avg = (_tempMin + _tempMax) / 2;
+    const tempColor = avg < 0 ? '#38bdf8' : avg < 15 ? '#ffd84d' : '#fb923c';
+    tempEl.style.color = tempColor;
+  }
+  // Өдөр/шөнийн температур ялгаа — min=шөнийн хамгийн бага, max=өдрийн хамгийн их
+  // Дундын утгаас ялгаж харуулна
+  const dayNightEl = document.getElementById('o_tempDayNight');
+  if(dayNightEl){
+    // Шөнийн хамгийн бага ≈ _tempMin, өдрийн хамгийн их ≈ _tempMax
+    // Дундаас хуваах
+    const mid = Math.round((_tempMin + _tempMax) / 2);
+    const nightStr = (_tempMin >= 0 ? '+' : '') + _tempMin + '...' + (mid >= 0 ? '+' : '') + mid;
+    const dayStr = (mid >= 0 ? '+' : '') + mid + '...' + maxStr;
+    document.getElementById('o_tempNightVal').textContent = nightStr;
+    document.getElementById('o_tempDayVal').textContent = dayStr;
+    // Шөнийн өнгө
+    document.getElementById('o_tempNightVal').style.color = _tempMin < 0 ? '#38bdf8' : '#ffd84d';
+    // Өдрийн өнгө
+    document.getElementById('o_tempDayVal').style.color = _tempMax < 0 ? '#38bdf8' : _tempMax < 15 ? '#ffd84d' : '#fb923c';
+  }
+}
+
+let _dayNightMode = false;
+function setDayNightMode(on){
+  _dayNightMode = on;
+  const single = document.getElementById('o_tempEl');
+  const dayNight = document.getElementById('o_tempDayNight');
+  if(single) single.style.display = on ? 'none' : '';
+  if(dayNight) dayNight.style.display = on ? 'flex' : 'none';
+  updateTempUI();
 }
 
 function initTempSlider(){
