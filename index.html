@@ -387,6 +387,31 @@ input:focus,select:focus{border-color:var(--brand-mid)}
 
 
 
+/* FACEBOOK MODE — 1200×630 */
+.ig-card.fb-mode .ig-topbar{height:80px;padding:0 28px}
+.ig-card.fb-mode .ig-logo{width:64px;height:64px}
+.ig-card.fb-mode .ig-logo img{width:60px;height:60px}
+.ig-card.fb-mode .ig-maintitle{font-size:26px}
+.ig-card.fb-mode .ig-subtitle{font-size:12px;margin-top:4px}
+.ig-card.fb-mode .ig-body{top:80px;bottom:70px;grid-template-columns:230px 1fr}
+.ig-card.fb-mode .ig-day{font-size:72px}
+.ig-card.fb-mode .ig-month{font-size:12px}
+.ig-card.fb-mode .ig-weekday{font-size:13px;margin-top:6px}
+.ig-card.fb-mode .ig-temp{font-size:32px;padding:10px 12px}
+.ig-card.fb-mode .ig-glass-date{padding:12px 14px 10px}
+.ig-card.fb-mode .ig-left{padding:16px 20px;gap:10px}
+.ig-card.fb-mode .ig-right{padding:14px 18px 14px}
+.ig-card.fb-mode .ig-soum-photo{height:120px;margin-bottom:10px}
+.ig-card.fb-mode .ig-cond-list{gap:8px}
+.ig-card.fb-mode .ig-cond-bubble{width:36px;height:36px}
+.ig-card.fb-mode .ig-cond-bubble svg{width:20px;height:20px}
+.ig-card.fb-mode .ig-cond-text{font-size:13px;padding-top:2px}
+.ig-card.fb-mode .ig-region-badge{font-size:12px;padding:5px 14px;margin-bottom:10px;margin-top:2px}
+.ig-card.fb-mode .ig-bottom{height:70px;padding:0 28px}
+.ig-card.fb-mode .ig-sun-text strong{font-size:16px}
+.ig-card.fb-mode .ig-contact{padding:7px 10px}
+.ig-card.fb-mode .ig-contact p{font-size:10px}
+
 /* BOTTOM BAR */
 .ig-bottom-inner-pad{padding:0 20px;}
 .ig-bottom{
@@ -535,9 +560,25 @@ input:focus,select:focus{border-color:var(--brand-mid)}
 
     <!-- БЭЛЭН ӨГҮҮЛБЭРИЙН САН -->
     <div class="phrase-lib" style="margin-bottom:10px">
-      <div style="font-size:11px;font-weight:800;color:#6b7fa0;margin-bottom:6px;text-transform:uppercase;letter-spacing:.4px">📚 Өгүүлбэрийн сан</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+        <div style="font-size:11px;font-weight:800;color:#6b7fa0;text-transform:uppercase;letter-spacing:.4px">📚 Өгүүлбэрийн сан</div>
+        <button class="btn-s" id="phraseEditToggle" onclick="togglePhraseEdit()" style="font-size:10px;padding:3px 10px">✏️ Засах</button>
+      </div>
       <div class="phrase-cats" id="phraseCats"></div>
       <div class="phrase-grid" id="phraseGrid"></div>
+      <!-- Нэмэх хэлбэр — засах горимд л харагдана -->
+      <div id="phraseAddForm" style="display:none;margin-top:8px;background:#f5f8ff;border-radius:10px;padding:10px;border:1.5px dashed #b8ccee">
+        <div style="font-size:11px;font-weight:700;color:#2E3192;margin-bottom:7px">➕ Шинэ өгүүлбэр нэмэх</div>
+        <div style="display:flex;gap:6px;margin-bottom:6px">
+          <select id="newPhraseIcon" style="width:60px;font-size:14px;padding:4px;border-radius:7px;border:1.5px solid #d8e4f0">
+            <option>☀️</option><option>⛅</option><option>☁️</option><option>🌤️</option>
+            <option>🌧️</option><option>❄️</option><option>💨</option><option>🌫️</option>
+            <option>🌪️</option><option>🌡️</option><option>⚠️</option><option>🌦️</option>
+          </select>
+          <input type="text" id="newPhraseText" placeholder="Өгүүлбэр бичих..." style="flex:1;font-size:12px;padding:5px 8px;border-radius:7px;border:1.5px solid #d8e4f0">
+        </div>
+        <button class="btn-s" onclick="addCustomPhrase()" style="background:var(--primary);color:#fff;width:100%">✅ Нэмэх</button>
+      </div>
     </div>
 
     <div class="quick-tags" id="quickTagsWrap">
@@ -905,7 +946,7 @@ function buildCondRows(){
       <select onchange="conditions[${i}].icon=this.value;buildCondRows()" style="width:52px;font-size:12px;padding:3px;border-radius:7px;border:1.5px solid #d8e4f0">
         ${iconKeys.map(k=>`<option value="${k}" ${c.icon===k?'selected':''}>${k}</option>`).join('')}
       </select>
-      <input type="text" value="${c.text.replace(/"/g,'&quot;')}" oninput="conditions[${i}].text=this.value" style="font-size:12px">
+      <input type="text" value="${c.text.replace(/<[^>]+>/g,'').replace(/"/g,'&quot;')}" oninput="conditions[${i}].text=this.value" style="font-size:12px" title="${c.text.replace(/<[^>]+>/g,'').replace(/"/g,'&quot;')}">
       <button class="cond-remove" onclick="removeCond(${i})">✕</button>`;
     cont.appendChild(div);
   });
@@ -997,9 +1038,12 @@ function setFormat(w,h,fname,btn){
   // ig-wrap aspect ratio шинэчлэх
   const wrap=document.getElementById('igWrap');
   if(wrap) wrap.style.aspectRatio=w+'/'+h;
-  // ig-card хэмжээ шинэчлэх
+  // ig-card хэмжээ шинэчлэх + горимын class
   const card=document.getElementById('exportTarget1');
-  if(card){card.style.width=w+'px';card.style.height=h+'px';}
+  if(card){
+    card.style.width=w+'px';card.style.height=h+'px';
+    card.classList.toggle('fb-mode', w===1200 && h===630);
+  }
   scaleCard();
 }
 
@@ -1293,6 +1337,48 @@ const PHRASES = {
 };
 
 let _activePcat = '☁️ Үүл';
+let _phraseEditMode = false;
+
+// LocalStorage-с нэмэлт өгүүлбэрүүд уншиж PHRASES-д нэмэх
+(function loadCustomPhrases(){
+  try {
+    const saved = JSON.parse(localStorage.getItem('ucuosht_phrases') || '{}');
+    Object.entries(saved).forEach(([cat, items]) => {
+      if(!PHRASES[cat]) PHRASES[cat] = [];
+      items.forEach(p => { if(!PHRASES[cat].find(x=>x.text===p.text)) PHRASES[cat].push(p); });
+    });
+  } catch(e){}
+})();
+
+function saveCustomPhrases(){
+  // Зөвхөн хэрэглэгчийн нэмсэн (default-аас хойших) өгүүлбэрүүдийг хадгална
+  // Бүх одоогийн PHRASES-ийг хадгалах нь хамгийн энгийн арга
+  try { localStorage.setItem('ucuosht_phrases', JSON.stringify(PHRASES)); } catch(e){}
+}
+
+function togglePhraseEdit(){
+  _phraseEditMode = !_phraseEditMode;
+  document.getElementById('phraseAddForm').style.display = _phraseEditMode ? 'block' : 'none';
+  document.getElementById('phraseEditToggle').textContent = _phraseEditMode ? '✅ Дуусгах' : '✏️ Засах';
+  renderPhrases();
+}
+
+function addCustomPhrase(){
+  const icon = document.getElementById('newPhraseIcon').value;
+  const text = document.getElementById('newPhraseText').value.trim();
+  if(!text) return;
+  if(!PHRASES[_activePcat]) PHRASES[_activePcat] = [];
+  PHRASES[_activePcat].push({icon, text});
+  saveCustomPhrases();
+  document.getElementById('newPhraseText').value = '';
+  renderPhrases();
+}
+
+function deletePhrase(cat, idx){
+  PHRASES[cat].splice(idx, 1);
+  saveCustomPhrases();
+  renderPhrases();
+}
 
 function buildPhraseLib(){
   const cats = document.getElementById('phraseCats');
@@ -1316,12 +1402,22 @@ function renderPhrases(){
   const grid = document.getElementById('phraseGrid');
   if(!grid) return;
   const list = PHRASES[_activePcat] || [];
-  grid.innerHTML = list.map((p,i) =>
-    `<div class="phrase-item" onclick="addPhraseToList(${i})">
-      <span class="phrase-icon">${p.icon}</span>
-      <span>${p.text.replace(/<[^>]+>/g,'')}</span>
-    </div>`
-  ).join('');
+  if(_phraseEditMode){
+    grid.innerHTML = list.map((p,i) =>
+      `<div class="phrase-item" style="display:flex;align-items:center;gap:6px;padding-right:4px">
+        <span class="phrase-icon" onclick="addPhraseToList(${i})" style="cursor:pointer">${p.icon}</span>
+        <span style="flex:1;font-size:12px" onclick="addPhraseToList(${i})" style="cursor:pointer">${p.text.replace(/<[^>]+>/g,'')}</span>
+        <button onclick="deletePhrase('${_activePcat}',${i})" style="background:#fee;border:1px solid #fcc;color:#c0392b;border-radius:6px;padding:2px 7px;font-size:11px;cursor:pointer;flex-shrink:0">🗑</button>
+      </div>`
+    ).join('');
+  } else {
+    grid.innerHTML = list.map((p,i) =>
+      `<div class="phrase-item" onclick="addPhraseToList(${i})">
+        <span class="phrase-icon">${p.icon}</span>
+        <span>${p.text.replace(/<[^>]+>/g,'')}</span>
+      </div>`
+    ).join('');
+  }
 }
 
 function addPhraseToList(idx){
