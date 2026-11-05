@@ -701,7 +701,7 @@ input:focus,select:focus{border-color:var(--brand-mid)}
     <div class="card-header" onclick="toggleCard(this)">
       <span class="card-title">🌊 Голын мэдээ</span>
       <span style="font-size:10px;color:var(--text-muted);margin-right:4px" id="riverStatusBadge"></span>
-      <button class="btn-s" onclick="event.stopPropagation();fetchRiverData()" style="font-size:11px;padding:4px 10px;margin-right:6px">🔄 Татах</button>
+      <button class="btn-s" id="btnRiverFetch" onclick="event.stopPropagation();fetchRiverData()" style="font-size:11px;padding:4px 10px;margin-right:6px">🔄 Татах</button>
       <span class="card-chevron">▼</span>
     </div>
     <div class="card-body">
@@ -2036,9 +2036,30 @@ async function fillFromWeatherAPI() {
 
 // ГОЛЫН МЭДЭЭ — weather.gov.mn
 // ══════════════════════════════════════════
+// Дархан-Уул аймгийн голуудын станц ID болон нэрсийн жагсаалт
+// API-с ирэх station id эсвэл нэрд тохирох шүүлтүүр
+const DARKHAN_RIVER_FILTER = {
+  ids:   ['darkhan','хара','khar','508','530','531','2024','2025'],  // станц ID/код
+  names: ['хара гол','хара','darkhan','дархан','онон','kharaa'],    // нэрийн хэсэг
+};
+
+function isDarkhanStation(s){
+  const id   = String(s.id   || s.stationId || s.code || '').toLowerCase();
+  const name = String(s.name || s.riverName  || s.river || '').toLowerCase();
+  const aimag= String(s.aimag|| s.province   || s.region|| '').toLowerCase();
+
+  // Аймгийн нэрээр шүүх
+  if(/дархан|darkhan/.test(aimag)) return true;
+  // ID-аар шүүх
+  if(DARKHAN_RIVER_FILTER.ids.some(k => id.includes(k))) return true;
+  // Нэрээр шүүх
+  if(DARKHAN_RIVER_FILTER.names.some(k => name.includes(k))) return true;
+  return false;
+}
+
 async function fetchRiverData(){
-  const btn = document.querySelector('.river-fetch-btn');
-  if(btn) btn.textContent = '⏳...';
+  const btn = document.getElementById('btnRiverFetch');
+  if(btn){ btn.textContent = '⏳...'; btn.disabled = true; }
 
   try {
     const res = await fetch('https://weather-proxy-o14g.onrender.com/hydrology');
@@ -2047,19 +2068,48 @@ async function fetchRiverData(){
 
     if(!data.success) throw new Error(data.message || 'API алдаа');
 
-    const stations = data.data || [];
-    if(!stations.length) throw new Error('Өгөгдөл олдсонгүй');
+    const all = data.data || [];
+    if(!all.length) throw new Error('Өгөгдөл олдсонгүй');
+
+    // Дархан-Уул аймгийн голуудыг шүүх
+    let stations = all.filter(isDarkhanStation);
+
+    // Шүүлтэнд нийцсэн зүйл олдоогүй бол raw debug харуулж хэрэглэгчид тохируулах боломж өгнө
+    if(!stations.length){
+      renderRiverRaw(all);
+      if(btn){ btn.textContent = '🔄 Шинэчлэх'; btn.disabled = false; }
+      return;
+    }
 
     renderRiverData(stations);
-
-    // Голын мэдээний товчийг нуух
-    if(btn) btn.style.display = 'none';
+    if(btn){ btn.textContent = '🔄 Шинэчлэх'; btn.disabled = false; }
 
   } catch(e) {
     const wrap = document.getElementById('riverStations');
     if(wrap) wrap.innerHTML = `<div style="color:#c62828;font-size:12px;font-weight:700;padding:8px">❌ ${e.message}</div>`;
-    if(btn) btn.textContent = '🔄 Дахин оролдох';
+    if(btn){ btn.textContent = '🔄 Дахин оролдох'; btn.disabled = false; }
   }
+}
+
+// Шүүлтэнд нийцэхгүй үед бүх станцыг сонгуулах UI харуулах
+function renderRiverRaw(all){
+  const wrap = document.getElementById('riverStations');
+  if(!wrap) return;
+  wrap.innerHTML = `
+    <div style="font-size:11px;color:#f57f17;font-weight:700;margin-bottom:8px">
+      ⚠️ Дархан-уул аймгийн гол автоматаар илрээгүй. Доороос сонгоно уу:
+    </div>
+    <div style="display:flex;flex-direction:column;gap:4px;max-height:200px;overflow-y:auto">
+      ${all.map((s,i) => `
+        <div onclick="renderRiverData([window._riverAllStations[${i}]])"
+          style="cursor:pointer;padding:5px 10px;border-radius:8px;border:1.5px solid #bbdefb;
+                 background:#fff;font-size:11px;font-weight:700;color:#1565c0;transition:background .1s"
+          onmouseover="this.style.background='#e3f2fd'" onmouseout="this.style.background='#fff'">
+          🌊 ${s.name || s.id || 'Станц ' + i}
+          <span style="color:#90a4ae;font-weight:600">${s.waterLevel != null ? '— ' + s.waterLevel + ' см' : ''}</span>
+        </div>`).join('')}
+    </div>`;
+  window._riverAllStations = all;
 }
 
 // Голын мэдээний state
