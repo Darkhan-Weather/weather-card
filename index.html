@@ -4,12 +4,29 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>УС ЦАГ УУР, ОРЧНЫ ШИНЖИЛГЭЭНИЙ ТӨВ</title>
-<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Roboto+Condensed:wght@700;900&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'Nunito',Arial,sans-serif;background:#e8f0f8;min-height:100vh;color:#1a2535}
-:root{--pal-bg1:#0d2459;--pal-bg2:#1a4a8a;--pal-accent:#ffd84d;--pal-bar1:#0a1e4a;--pal-bar2:#1a4a8a;}
+:root{
+  --brand-dark:#2E3192;
+  --brand-mid:#0072BB;
+  --brand-light:#00ADEF;
+  --brand-arc1:#2E3192;
+  --brand-arc2:#0072BB;
+  --brand-arc3:#00ADEF;
+  --warn-yellow:#F5A623;
+  --warn-orange:#E8681A;
+  --warn-red:#C0392B;
+  --bg-page:#EEF3FA;
+  --bg-card:#fff;
+  --border:#D8E4F0;
+  --text-main:#1A2535;
+  --text-muted:#6B7FA0;
+  /* legacy pal vars */
+  --pal-bg1:#0d2459;--pal-bg2:#1a4a8a;--pal-accent:#ffd84d;--pal-bar1:#0a1e4a;--pal-bar2:#1a4a8a;
+}
+body{font-family:'Roboto',Arial,sans-serif;background:var(--bg-page);min-height:100vh;color:var(--text-main)}
 
 
 
@@ -101,52 +118,163 @@ body{font-family:'Nunito',Arial,sans-serif;background:#e8f0f8;min-height:100vh;c
 .tpl-btn{padding:10px 8px;border-radius:10px;border:1.5px solid #d8e4f0;background:#f4f8fd;cursor:pointer;font-size:11px;font-family:'Nunito',Arial,sans-serif;font-weight:800;color:#1a2535;transition:all .15s;text-align:center;line-height:1.4}
 .tpl-btn:hover{background:#1a5fa5;color:#fff;border-color:#1a5fa5}
 
-/* ── APP HEADER ── */
+/* ══ APP SHELL ══ */
 .app-header{
-  background:linear-gradient(135deg,#0a1e4a,#1a4a8a);
-  padding:18px 24px;
-  display:flex;align-items:center;gap:18px;
-  box-shadow:0 3px 16px rgba(0,0,0,0.2);
+  background:linear-gradient(135deg,var(--brand-dark) 0%,var(--brand-mid) 100%);
+  padding:14px 24px;
+  display:flex;align-items:center;gap:16px;
+  box-shadow:0 3px 16px rgba(46,49,146,0.3);
+  position:sticky;top:0;z-index:100;
 }
 .app-header-logo{
-  width:64px;height:64px;border-radius:50%;
-  background:#fff;border:3px solid rgba(255,255,255,0.8);
+  width:56px;height:56px;border-radius:50%;
+  background:#fff;border:3px solid rgba(255,255,255,0.85);
   display:flex;align-items:center;justify-content:center;
   overflow:hidden;flex-shrink:0;
   box-shadow:0 3px 12px rgba(0,0,0,0.25);
 }
-.app-header-logo img{width:60px;height:60px;object-fit:contain;padding:4px}
-.app-header-title{color:#fff}
-.app-header-title h1{font-size:18px;font-weight:900;letter-spacing:.5px;line-height:1.2}
-.app-header-title p{font-size:12px;color:rgba(255,255,255,.7);font-weight:600;margin-top:2px}
+.app-header-logo img{width:52px;height:52px;object-fit:contain;padding:3px}
+.app-header-title{color:#fff;flex:1}
+.app-header-title h1{font-family:'Roboto Condensed',Arial,sans-serif;font-size:16px;font-weight:900;letter-spacing:.5px;line-height:1.2}
+.app-header-title p{font-size:11px;color:rgba(255,255,255,.75);font-weight:400;margin-top:2px}
 
-/* ── EDITOR ── */
-.editor{max-width:700px;margin:0 auto;padding:16px 14px}
-.card{background:#fff;border-radius:12px;border:1px solid #d8e4f0;padding:16px;margin-bottom:10px;box-shadow:0 2px 12px rgba(26,95,165,.07)}
-.card-title{font-size:13px;font-weight:800;color:#1a2535;margin-bottom:12px;display:flex;align-items:center;gap:6px}
-label{font-size:11px;font-weight:700;color:#6b7fa0;display:block;margin-bottom:3px;text-transform:uppercase;letter-spacing:.4px}
-input[type=text],input[type=number],select{width:100%;padding:7px 10px;border:1.5px solid #d8e4f0;border-radius:8px;font-size:13px;font-family:'Nunito',Arial,sans-serif;background:#fff;color:#1a2535;outline:none;transition:border .15s}
-input:focus,select:focus{border-color:#1a5fa5}
+/* ── TOOLBAR ── */
+.toolbar{
+  background:#fff;
+  border-bottom:2px solid var(--border);
+  padding:8px 20px;
+  display:flex;align-items:center;gap:8px;
+  flex-wrap:wrap;
+  position:sticky;top:84px;z-index:99;
+  box-shadow:0 2px 8px rgba(46,49,146,0.07);
+}
+.toolbar-btn{
+  display:flex;align-items:center;gap:5px;
+  padding:7px 14px;border-radius:8px;
+  font-family:'Roboto',Arial,sans-serif;
+  font-size:12px;font-weight:700;
+  cursor:pointer;border:1.5px solid var(--border);
+  background:#fff;color:var(--text-main);
+  transition:all .15s;white-space:nowrap;
+}
+.toolbar-btn:hover{background:var(--bg-page);border-color:var(--brand-mid);color:var(--brand-dark)}
+.toolbar-btn.primary{background:linear-gradient(135deg,var(--brand-dark),var(--brand-mid));color:#fff;border-color:transparent;box-shadow:0 2px 8px rgba(46,49,146,0.3)}
+.toolbar-btn.primary:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(46,49,146,0.4)}
+.toolbar-btn.success{background:linear-gradient(135deg,#43a047,#1b5e20);color:#fff;border-color:transparent}
+.toolbar-btn:disabled{opacity:0.55;cursor:not-allowed;transform:none}
+.toolbar-sep{width:1px;height:28px;background:var(--border);flex-shrink:0}
+
+/* ══ TWO-COLUMN LAYOUT ══ */
+.app-body{
+  display:grid;
+  grid-template-columns:1fr;
+  min-height:calc(100vh - 130px);
+}
+@media(min-width:1024px){
+  .app-body{
+    grid-template-columns:40% 60%;
+    align-items:start;
+  }
+}
+
+/* ── EDITOR COLUMN ── */
+.editor-col{
+  padding:16px 14px;
+  overflow-y:auto;
+}
+@media(min-width:1024px){
+  .editor-col{
+    height:calc(100vh - 130px);
+    overflow-y:auto;
+    border-right:2px solid var(--border);
+  }
+}
+
+/* ── PREVIEW COLUMN ── */
+.preview-col{
+  padding:16px 14px;
+  background:var(--bg-page);
+}
+@media(min-width:1024px){
+  .preview-col{
+    height:calc(100vh - 130px);
+    overflow-y:auto;
+    position:sticky;
+    top:130px;
+  }
+}
+
+/* ── PREVIEW TABS ── */
+.preview-tabs{
+  display:flex;gap:4px;margin-bottom:14px;
+  background:#fff;border-radius:10px;padding:4px;
+  border:1.5px solid var(--border);
+}
+.preview-tab{
+  flex:1;text-align:center;padding:7px 10px;
+  border-radius:8px;font-size:12px;font-weight:700;
+  font-family:'Roboto',Arial,sans-serif;
+  cursor:pointer;border:none;background:transparent;
+  color:var(--text-muted);transition:all .15s;
+}
+.preview-tab.active{
+  background:linear-gradient(135deg,var(--brand-dark),var(--brand-mid));
+  color:#fff;box-shadow:0 2px 8px rgba(46,49,146,0.25);
+}
+
+/* ── ACCORDION CARDS ── */
+.editor{max-width:none;padding:0}
+.card{background:var(--bg-card);border-radius:12px;border:1.5px solid var(--border);margin-bottom:8px;box-shadow:0 2px 8px rgba(46,49,146,0.06);overflow:hidden}
+.card-header{
+  display:flex;align-items:center;gap:8px;
+  padding:12px 14px;cursor:pointer;
+  user-select:none;
+  border-bottom:1.5px solid transparent;
+  transition:all .15s;
+}
+.card-header:hover{background:var(--bg-page)}
+.card-header.open{border-bottom-color:var(--border);background:linear-gradient(135deg,rgba(46,49,146,0.04),rgba(0,114,187,0.04))}
+.card-title{font-family:'Roboto Condensed',Arial,sans-serif;font-size:13px;font-weight:700;color:var(--text-main);flex:1}
+.card-chevron{font-size:12px;color:var(--text-muted);transition:transform .2s;flex-shrink:0}
+.card-header.open .card-chevron{transform:rotate(180deg)}
+.card-body{padding:14px;display:none}
+.card-body.open{display:block}
+/* static cards (no accordion) */
+.card-static .card-body{display:block;padding:14px}
+
+label{font-size:11px;font-weight:700;color:var(--text-muted);display:block;margin-bottom:3px;text-transform:uppercase;letter-spacing:.4px}
+input[type=text],input[type=number],select{width:100%;padding:7px 10px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:'Roboto',Arial,sans-serif;background:#fff;color:var(--text-main);outline:none;transition:border .15s}
+input:focus,select:focus{border-color:var(--brand-mid)}
 .g2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .g4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:8px}
-.btn-p{background:linear-gradient(135deg,#1a5fa5,#0d3d6e);color:#fff;border:none;padding:12px 24px;border-radius:10px;font-size:14px;cursor:pointer;font-family:'Nunito',Arial,sans-serif;font-weight:800;box-shadow:0 3px 12px rgba(26,95,165,.3);width:100%;transition:all .15s}
+.btn-p{background:linear-gradient(135deg,var(--brand-dark),var(--brand-mid));color:#fff;border:none;padding:12px 24px;border-radius:10px;font-size:14px;cursor:pointer;font-family:'Roboto',Arial,sans-serif;font-weight:700;box-shadow:0 3px 12px rgba(46,49,146,.3);width:100%;transition:all .15s}
 .btn-p:hover{transform:translateY(-1px)}
-.btn-s{background:#fff;color:#1a2535;border:1.5px solid #d8e4f0;padding:6px 12px;border-radius:8px;font-size:11px;cursor:pointer;font-family:'Nunito',Arial,sans-serif;font-weight:700;transition:all .15s}
-.btn-s:hover{background:#dceefb;border-color:#1a5fa5}
-.btn-d{background:#fff;color:#c0392b;border:1.5px solid #e8b4b4;padding:4px 10px;border-radius:7px;font-size:11px;cursor:pointer;font-family:'Nunito',Arial,sans-serif;font-weight:700}
-.act-bar{display:flex;gap:12px;margin-top:16px;flex-wrap:wrap}
-.act-btn{display:flex;align-items:center;justify-content:center;gap:8px;font-size:15px;padding:13px 28px;border-radius:14px;cursor:pointer;border:none;font-family:'Nunito',Arial,sans-serif;font-weight:800;transition:all .2s;flex:1;min-width:160px}
-.act-btn-palette{background:linear-gradient(135deg,#6c5ce7,#a29bfe);color:#fff;box-shadow:0 4px 16px rgba(108,92,231,0.35)}
-.act-btn-palette:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(108,92,231,0.5)}
-.act-btn-export{background:linear-gradient(135deg,#0984e3,#74b9ff);color:#fff;box-shadow:0 4px 16px rgba(9,132,227,0.35)}
-.act-btn-export:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(9,132,227,0.5)}
-.act-btn:hover{background:#dceefb;border-color:#1a5fa5;color:#1a5fa5}
+.btn-s{background:#fff;color:var(--text-main);border:1.5px solid var(--border);padding:6px 12px;border-radius:8px;font-size:11px;cursor:pointer;font-family:'Roboto',Arial,sans-serif;font-weight:700;transition:all .15s}
+.btn-s:hover{background:var(--bg-page);border-color:var(--brand-mid)}
+.btn-d{background:#fff;color:#c0392b;border:1.5px solid #e8b4b4;padding:4px 10px;border-radius:7px;font-size:11px;cursor:pointer;font-family:'Roboto',Arial,sans-serif;font-weight:700}
+.act-bar{display:flex;gap:10px;margin-top:12px;flex-wrap:wrap}
+.act-btn{display:flex;align-items:center;justify-content:center;gap:7px;font-size:13px;padding:11px 20px;border-radius:10px;cursor:pointer;border:none;font-family:'Roboto',Arial,sans-serif;font-weight:700;transition:all .2s;flex:1;min-width:130px}
+.act-btn-palette{background:linear-gradient(135deg,#6c5ce7,#a29bfe);color:#fff;box-shadow:0 3px 12px rgba(108,92,231,0.3)}
+.act-btn-palette:hover{transform:translateY(-1px)}
+.act-btn-export{background:linear-gradient(135deg,var(--brand-mid),var(--brand-light));color:#fff;box-shadow:0 3px 12px rgba(0,114,187,0.3)}
+.act-btn-export:hover{transform:translateY(-1px)}
 .act-btn svg{width:14px;height:14px}
-.cond-row{display:grid;grid-template-columns:42px 54px 1fr auto;gap:7px;align-items:center;background:#f4f8fd;border-radius:9px;padding:8px 10px;margin-bottom:6px;border:1px solid #e0eaf0}
+.cond-row{display:grid;grid-template-columns:42px 54px 1fr auto;gap:7px;align-items:center;background:var(--bg-page);border-radius:9px;padding:8px 10px;margin-bottom:6px;border:1px solid var(--border)}
 .cond-remove{background:none;border:none;color:#c0392b;cursor:pointer;font-size:16px;padding:0 4px}
-.soum-img-btn{display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 10px;border-radius:10px;border:1.5px solid #d8e4f0;background:#f4f8fd;cursor:pointer;font-family:'Nunito',Arial,sans-serif;font-size:10px;font-weight:700;color:#1a2535;transition:all .15s}
-.soum-img-btn:hover{background:#dceefb;border-color:#1a5fa5}
-.soum-img-btn.active{background:#1a5fa5;border-color:#1a5fa5;color:#fff}
+.soum-img-btn{display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 10px;border-radius:10px;border:1.5px solid var(--border);background:var(--bg-page);cursor:pointer;font-family:'Roboto',Arial,sans-serif;font-size:10px;font-weight:700;color:var(--text-main);transition:all .15s}
+.soum-img-btn:hover{background:#dceefb;border-color:var(--brand-mid)}
+.soum-img-btn.active{background:var(--brand-dark);border-color:var(--brand-dark);color:#fff}
+
+/* preview download btn */
+.preview-dl-btn{
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  width:100%;margin-top:12px;padding:11px;border-radius:10px;
+  background:linear-gradient(135deg,var(--brand-mid),var(--brand-light));
+  color:#fff;border:none;font-family:'Roboto',Arial,sans-serif;
+  font-size:13px;font-weight:700;cursor:pointer;
+  box-shadow:0 3px 12px rgba(0,114,187,0.3);transition:all .15s;
+}
+.preview-dl-btn:hover{transform:translateY(-1px)}
 
 /* ══ INSTAGRAM 1080×1080 ══ */
 .ig-wrap{width:min(600px,94vw);aspect-ratio:1/1;margin:20px auto 0;position:relative}
@@ -290,25 +418,37 @@ input:focus,select:focus{border-color:#1a5fa5}
   </div>
   <div class="app-header-title">
     <h1>УС ЦАГ УУР, ОРЧНЫ ШИНЖИЛГЭЭНИЙ ТӨВ</h1>
-    <p>Дархан-Уул аймгийн УЦУОШТ — Цаг агаарын мэдээ бэлтгэх систем</p>
+    <p>Дархан-Уул аймгийн УЦУОШТ · Цаг агаарын мэдээ бэлтгэх систем</p>
   </div>
 </div>
 
+<!-- Toolbar -->
+<div class="toolbar">
+  <button class="toolbar-btn primary" id="btnApiFill" onclick="fillFromWeatherAPI()">⚡ Автомат бөглөх</button>
+  <div class="toolbar-sep"></div>
+  <button class="toolbar-btn success" onclick="saveToHistory()">💾 Хадгалах</button>
+  <button class="toolbar-btn" onclick="doExport()">📥 Зураг татах</button>
+  <button class="toolbar-btn" onclick="applyRandomPalette()">🎨 Өнгө солих</button>
+  <div class="toolbar-sep"></div>
+  <span id="apiFillStatus" style="font-size:11px;color:var(--text-muted);font-weight:500"></span>
+</div>
+
+<!-- Two-column body -->
+<div class="app-body">
+
+<!-- ══ EDITOR COLUMN ══ -->
+<div class="editor-col">
 <div class="editor">
 
-  <!-- ── WEATHER.GOV.MN API АВТОМАТ БӨГЛӨХ ── -->
-  <div class="api-fill-bar" id="apiFillBar">
-    <div style="flex:1;min-width:0">
-      <div class="api-fill-status" id="apiFillStatus">🌤️ weather.gov.mn API — Дархан өртөө (ID: 508)</div>
-      <div class="api-fill-detail" id="apiFillDetail">Товч дарж одоогийн цаг агаарын мэдээллийг автоматаар бөглөнө</div>
-    </div>
-    <button class="btn-api" id="btnApiFill" onclick="fillFromWeatherAPI()">
-      ⚡ Автомат бөглөх
-    </button>
-  </div>
+  <div id="apiFillDetail" style="display:none"></div>
 
+  <!-- 📅 Огноо & Байршил -->
   <div class="card">
-    <div class="card-title">📅 Огноо & Байршил</div>
+    <div class="card-header open" onclick="toggleCard(this)">
+      <span class="card-title">📅 Огноо & Байршил</span>
+      <span class="card-chevron">▼</span>
+    </div>
+    <div class="card-body open">
     <div class="g4">
       <div><label>Сар</label><input type="text" id="o_month" placeholder="5-р сарын"></div>
       <div><label>Өдөр</label><input type="number" id="o_day" placeholder="21"></div>
@@ -343,31 +483,49 @@ input:focus,select:focus{border-color:#1a5fa5}
         <input type="hidden" id="o_temp" value="+18...+28">
       </div>
     </div>
-  </div>
+    </div><!-- /card-body -->
+  </div><!-- /card Огноо -->
 
+  <!-- ⚠️ Анхааруулга -->
   <div class="card">
-    <div class="card-title">⚠️ Анхааруулга</div>
-    <input type="text" id="o_alert" placeholder="Хоосон үлдээвэл харагдахгүй">
-  </div>
-
-  <div class="card">
-    <div class="card-title">🏙️ Зураг сонгох
-      <label style="margin-left:auto;margin-bottom:0;cursor:pointer;background:#dceefb;color:#1a5fa5;padding:5px 12px;border-radius:8px;font-size:11px;display:inline-block">
-        📷 Өөр зураг
-        <input type="file" id="o_cityimg" accept="image/*" onchange="previewCityImg(this)" style="display:none">
-      </label>
+    <div class="card-header" onclick="toggleCard(this)">
+      <span class="card-title">⚠️ Анхааруулга</span>
+      <span class="card-chevron">▼</span>
     </div>
+    <div class="card-body">
+      <input type="text" id="o_alert" placeholder="Хоосон үлдээвэл харагдахгүй">
+    </div>
+  </div>
+
+  <!-- 🏙️ Зураг -->
+  <div class="card">
+    <div class="card-header" onclick="toggleCard(this)">
+      <span class="card-title">🏙️ Зураг сонгох</span>
+      <span class="card-chevron">▼</span>
+    </div>
+    <div class="card-body">
+    <label style="margin-bottom:8px;cursor:pointer;background:var(--bg-page);color:var(--brand-mid);padding:7px 14px;border-radius:8px;font-size:11px;display:inline-block;border:1.5px solid var(--border);font-weight:700">
+      📷 Өөр зураг оруулах
+      <input type="file" id="o_cityimg" accept="image/*" onchange="previewCityImg(this)" style="display:none">
+    </label>
     <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px" id="soumImgBtns"></div>
     <div id="o_imgpreview" style="display:none;align-items:center;gap:10px">
-      <img id="o_imgthumb" style="height:55px;border-radius:8px;border:2px solid #d8e4f0;object-fit:cover" alt="">
+      <img id="o_imgthumb" style="height:55px;border-radius:8px;border:2px solid var(--border);object-fit:cover" alt="">
       <button class="btn-d" onclick="clearCityImg()">Устгах</button>
+    </div>
     </div>
   </div>
 
+  <!-- 📋 Нөхцлийн жагсаалт -->
   <div class="card">
-    <div class="card-title">📋 Нөхцлийн жагсаалт
-      <button class="btn-s" onclick="addCond()" style="margin-left:auto">+ Мөр нэмэх</button>
+    <div class="card-header open" onclick="toggleCard(this)">
+      <span class="card-title">📋 Нөхцлийн жагсаалт</span>
+      <span class="card-chevron">▼</span>
     </div>
+    <div class="card-body open">
+      <div style="display:flex;justify-content:flex-end;margin-bottom:8px">
+        <button class="btn-s" onclick="addCond()">+ Мөр нэмэх</button>
+      </div>
 
     <!-- ЗАГВАР СОНГОХ -->
     <div style="margin-bottom:10px">
@@ -393,26 +551,54 @@ input:focus,select:focus{border-color:#1a5fa5}
       <button class="qtag qtag-hot" onclick="addQuickTag('🌫️','Зарим газраар борооны өмнө тур зуур ширгүүсэж <b class=\'hot\'>шороон шуурга</b> шуурна.')">🌫️ Шуурга</button>
       <button class="qtag qtag-hot" onclick="addQuickTag('🌡️','Өдөртөө <b class=\'hot\'>+18...+23</b> градус дулаан байна.')">🌡️ Температур</button>
     </div>
-    <div id="condRows"></div>
+      <div id="condRows"></div>
+    </div>
   </div>
 
-    <!-- ГОЛЫН МЭДЭЭ -->
-  <div class="river-bar" id="riverBar" style="display:none">
-    <div class="river-title">
-      🌊 Голын түвшин — Дархан-Уул
-      <button class="river-fetch-btn" onclick="fetchRiverData()">🔄 Шинэчлэх</button>
+  <!-- 🌊 Голын мэдээ -->
+  <div class="card">
+    <div class="card-header" onclick="toggleCard(this)">
+      <span class="card-title">🌊 Голын мэдээ</span>
+      <span style="font-size:10px;color:var(--text-muted);margin-right:4px" id="riverStatusBadge"></span>
+      <button class="btn-s" onclick="event.stopPropagation();fetchRiverData()" style="font-size:11px;padding:4px 10px;margin-right:6px">🔄 Татах</button>
+      <span class="card-chevron">▼</span>
     </div>
-    <div class="river-stations" id="riverStations"></div>
+    <div class="card-body">
+      <div id="riverStations"><p style="font-size:12px;color:var(--text-muted);text-align:center;padding:16px 0">🔄 "Татах" товч дарж голын мэдээ ачааллана</p></div>
+    </div>
   </div>
-  <button class="btn-s" onclick="fetchRiverData()" style="width:100%;margin-bottom:10px;padding:8px;font-size:12px">🌊 Голын мэдээ татах</button>
 
-  <button class="btn-p" onclick="generate1day()">🌤️ Мэдээ үүсгэх</button>
+  <!-- Мэдээ үүсгэх -->
+  <button class="btn-p" onclick="generate1day()" style="margin-top:4px">🌤️ Мэдээ үүсгэх · Preview шинэчлэх</button>
 
-  <div id="result1day" style="display:none;margin-top:20px">
-    <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
-      <span id="palLbl" style="font-size:11px;font-weight:700;color:#6b7fa0;opacity:0;transition:opacity .6s;background:#f4f8fd;padding:4px 14px;border-radius:20px;border:1.5px solid #d8e4f0"></span>
-    </div>
+</div><!-- /editor -->
 
+<!-- History -->
+<div class="card" style="margin-top:8px">
+  <div class="card-header" onclick="toggleCard(this)">
+    <span class="card-title">🗂️ Хадгалсан мэдээнүүд</span>
+    <button class="btn-s" onclick="event.stopPropagation();clearHistory()" style="font-size:10px;padding:4px 10px;margin-right:6px;color:#c0392b;border-color:#e8b4b4">🗑️ Бүгд устгах</button>
+    <span class="card-chevron">▼</span>
+  </div>
+  <div class="card-body">
+    <div class="history-list" id="historyList"></div>
+  </div>
+</div>
+
+</div><!-- /editor-col -->
+
+<!-- ══ PREVIEW COLUMN ══ -->
+<div class="preview-col">
+
+  <!-- Preview tabs -->
+  <div class="preview-tabs">
+    <button class="preview-tab active" id="tab-today" onclick="switchPreviewTab('today')">🌤️ Өнөөдрийн карт</button>
+    <button class="preview-tab" id="tab-forecast" onclick="switchPreviewTab('forecast')">📅 3 хоногийн карт</button>
+  </div>
+
+  <!-- Today preview -->
+  <div id="previewToday">
+    <span id="palLbl" style="display:none"></span>
     <div class="ig-wrap" id="igWrap">
       <div class="ig-card" id="exportTarget1">
 
@@ -483,7 +669,7 @@ input:focus,select:focus{border-color:#1a5fa5}
     </div>
 
     <!-- FORMAT SELECTOR -->
-    <div class="format-bar">
+    <div class="format-bar" style="margin-top:10px">
       <button class="fmt-btn active" id="fmt1080" onclick="setFormat(1080,1080,'weather_1080x1080.png',this)">
         📷 Instagram<br>1080×1080
       </button>
@@ -495,39 +681,35 @@ input:focus,select:focus{border-color:#1a5fa5}
       </button>
     </div>
 
-    <div class="act-bar">
-      <button class="act-btn act-btn-palette" onclick="applyRandomPalette()">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M8 12a4 4 0 0 1 8 0c0 2-2 4-4 6-2-2-4-4-4-6z"/><circle cx="12" cy="9" r="1" fill="currentColor"/></svg>
-        🎨 Өнгө солих
-      </button>
-      <button class="act-btn act-btn-export" onclick="doExport()">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-        📥 Зураг татах
-      </button>
-      <button class="act-btn" style="background:linear-gradient(135deg,#00b894,#55efc4);color:#fff;box-shadow:0 4px 16px rgba(0,184,148,0.3)" onclick="saveToHistory()">
-        💾 Хадгалах
-      </button>
-    </div>
+    <!-- Download + palette in preview col -->
+    <button class="preview-dl-btn" onclick="doExport()">📥 Зураг татах</button>
+    <button class="preview-dl-btn" onclick="applyRandomPalette()" style="background:linear-gradient(135deg,#6c5ce7,#a29bfe);margin-top:6px;box-shadow:0 3px 12px rgba(108,92,231,0.3)">🎨 Өнгө солих</button>
 
     <!-- CAPTION -->
     <div class="card" style="margin-top:10px">
-      <div class="card-title">📝 Instagram caption
-        <button class="caption-copy-btn" onclick="copyCaption()" style="margin-left:auto;font-size:11px;padding:5px 12px">📋 Хуулах</button>
+      <div class="card-header" onclick="toggleCard(this)">
+        <span class="card-title">📝 Caption бичвэр</span>
+        <button class="caption-copy-btn" onclick="event.stopPropagation();copyCaption()" style="margin-right:8px;font-size:11px;padding:4px 10px">📋 Хуулах</button>
+        <span class="card-chevron">▼</span>
       </div>
-      <div class="caption-box" id="captionBox">Мэдээ үүсгэсний дараа caption автоматаар гарна.</div>
+      <div class="card-body">
+        <div class="caption-box" id="captionBox">Мэдээ үүсгэсний дараа caption автоматаар гарна.</div>
+      </div>
     </div>
-  </div>
-</div>
 
-<!-- HISTORY PANEL -->
-<div class="editor" style="max-width:700px;margin:0 auto;padding:0 14px 20px">
-  <div class="card">
-    <div class="card-title">🗂️ Хадгалсан мэдээнүүд
-      <button class="btn-s" onclick="clearHistory()" style="margin-left:auto;color:#c0392b;border-color:#e8b4b4">🗑️ Бүгд устгах</button>
+  </div><!-- /previewToday -->
+
+  <!-- Forecast preview (placeholder) -->
+  <div id="previewForecast" style="display:none">
+    <div style="text-align:center;padding:40px 20px;color:var(--text-muted)">
+      <div style="font-size:48px;margin-bottom:16px">📅</div>
+      <div style="font-family:'Roboto Condensed',Arial,sans-serif;font-size:16px;font-weight:700;color:var(--brand-dark);margin-bottom:8px">3 хоногийн карт</div>
+      <div style="font-size:13px">Удахгүй нэмэгдэнэ</div>
     </div>
-    <div class="history-list" id="historyList"></div>
   </div>
-</div>
+
+</div><!-- /preview-col -->
+</div><!-- /app-body -->
 
 <script>
 const MN_MONTHS=['1-р сарын','2-р сарын','3-р сарын','4-р сарын','5-р сарын','6-р сарын','7-р сарын','8-р сарын','9-р сарын','10-р сарын','11-р сарын','12-р сарын'];
@@ -535,13 +717,36 @@ const MN_WEEKDAYS=['НЯМ ГАРАГ','ДАВАА ГАРАГ','МЯГМАР Г�
 
 
 
+// ── ACCORDION ──
+function toggleCard(hdr){
+  hdr.classList.toggle('open');
+  const body=hdr.nextElementSibling;
+  body.classList.toggle('open');
+}
+
+// ── PREVIEW TABS ──
+function switchPreviewTab(tab){
+  document.getElementById('previewToday').style.display = tab==='today'?'block':'none';
+  document.getElementById('previewForecast').style.display = tab==='forecast'?'block':'none';
+  document.getElementById('tab-today').classList.toggle('active', tab==='today');
+  document.getElementById('tab-forecast').classList.toggle('active', tab==='forecast');
+}
+
+// ── SCALE CARD ──
 function scaleCard(){
-  const wrap=document.getElementById('igWrap');if(!wrap||wrap.style.display==='none')return;
+  const wrap=document.getElementById('igWrap');if(!wrap)return;
   const w=wrap.offsetWidth;const scale=w/1080;
-  document.querySelector('.ig-card').style.transform=`scale(${scale})`;
-  wrap.style.height=(1080*scale)+'px';
+  const card=document.querySelector('.ig-card');
+  if(card){card.style.transform=`scale(${scale})`;wrap.style.height=(1080*scale)+'px';}
 }
 window.addEventListener('resize',scaleCard);
+
+// show result1day always (preview column always visible)
+document.addEventListener('DOMContentLoaded',()=>{
+  const r=document.getElementById('result1day');
+  if(r){r.style.display='block';}
+  scaleCard();
+});
 
 // Sun calc
 const SOUM_COORDS={
@@ -777,7 +982,7 @@ function generate1day(){
   else{sp.style.display='none';bg.style.display='none';}
 
   document.getElementById('result1day').style.display='block';
-  setTimeout(()=>{scaleCard();document.getElementById('result1day').scrollIntoView({behavior:'smooth',block:'start'});},80);
+  setTimeout(()=>{scaleCard();},80);
   updateCaption();
 }
 
@@ -1367,8 +1572,7 @@ async function fillFromWeatherAPI() {
 // ══════════════════════════════════════════
 async function fetchRiverData(){
   const btn = document.querySelector('.river-fetch-btn');
-  const initBtn = document.querySelector('button[onclick="fetchRiverData()"].btn-s');
-  if(btn) btn.textContent = '⏳ Татаж байна...';
+  if(btn) btn.textContent = '⏳...';
 
   try {
     const res = await fetch('https://weather-proxy-o14g.onrender.com/hydrology');
@@ -1386,18 +1590,15 @@ async function fetchRiverData(){
     if(initBtn) initBtn.style.display = 'none';
 
   } catch(e) {
-    const bar = document.getElementById('riverBar');
-    if(bar){ bar.style.display='block'; bar.querySelector('.river-stations').innerHTML = `<div style="color:#c62828;font-size:12px;font-weight:700">❌ ${e.message}</div>`; }
+    const wrap = document.getElementById('riverStations');
+    if(wrap) wrap.innerHTML = `<div style="color:#c62828;font-size:12px;font-weight:700;padding:8px">❌ ${e.message}</div>`;
     if(btn) btn.textContent = '🔄 Дахин оролдох';
   }
 }
 
 function renderRiverData(stations){
-  const bar = document.getElementById('riverBar');
   const wrap = document.getElementById('riverStations');
-  if(!bar || !wrap) return;
-
-  bar.style.display = 'block';
+  if(!wrap) return;
 
   wrap.innerHTML = stations.map(s => {
     // Аюулын зэрэглэл тодорхойлох
