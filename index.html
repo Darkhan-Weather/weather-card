@@ -673,17 +673,16 @@ input:focus,select:focus{border-color:var(--brand-mid)}
       <button class="fmt-btn active" id="fmt1080" onclick="setFormat(1080,1080,'weather_1080x1080.png',this)">
         📷 Instagram<br>1080×1080
       </button>
-      <button class="fmt-btn" id="fmt1920" onclick="setFormat(1080,1920,'weather_story_1080x1920.png',this)">
-        📱 Story<br>1080×1920
-      </button>
       <button class="fmt-btn" id="fmt1200" onclick="setFormat(1200,630,'weather_fb_1200x630.png',this)">
         🖥️ Facebook<br>1200×630
       </button>
     </div>
 
-    <!-- Download + palette in preview col -->
-    <button class="preview-dl-btn" onclick="doExport()">📥 Зураг татах</button>
-    <button class="preview-dl-btn" onclick="applyRandomPalette()" style="background:linear-gradient(135deg,#6c5ce7,#a29bfe);margin-top:6px;box-shadow:0 3px 12px rgba(108,92,231,0.3)">🎨 Өнгө солих</button>
+    <!-- Download + palette in preview col — same row -->
+    <div style="display:flex;gap:8px;margin-top:4px">
+      <button class="preview-dl-btn" onclick="doExport()" style="flex:1">📥 Зураг татах</button>
+      <button class="preview-dl-btn" onclick="applyRandomPalette()" style="flex:1;background:linear-gradient(135deg,#6c5ce7,#a29bfe);box-shadow:0 3px 12px rgba(108,92,231,0.3)">🎨 Өнгө солих</button>
+    </div>
 
     <!-- CAPTION -->
     <div class="card" style="margin-top:10px">
@@ -693,7 +692,7 @@ input:focus,select:focus{border-color:var(--brand-mid)}
         <span class="card-chevron">▼</span>
       </div>
       <div class="card-body">
-        <div class="caption-box" id="captionBox">Мэдээ үүсгэсний дараа caption автоматаар гарна.</div>
+        <div class="caption-box" id="captionBox" style="color:var(--text-muted);font-style:italic;font-size:12px">↑ "Мэдээ үүсгэх" товч дарсны дараа caption энд автоматаар гарна.</div>
       </div>
     </div>
 
@@ -1129,7 +1128,12 @@ function updateCaption(){
   if(alert) caption+=`⚠️ ${alert}\n`;
   caption+=`\n☎️ 70374161\n🌐 darkhan-uul.weather.gov.mn\n#цагагаар #Дархан #УЦУОШТ`;
   const box=document.getElementById('captionBox');
-  if(box) box.textContent=caption;
+  if(box){
+    box.textContent=caption;
+    box.style.color='';
+    box.style.fontStyle='';
+    box.style.fontSize='';
+  }
   return caption;
 }
 
@@ -1503,11 +1507,14 @@ async function fillFromWeatherAPI() {
 
     // Нөхцлийн мөр нэмэх
     const cond = CONDITION_MAP[condition] || { icon: '⛅', text: condition + '.' };
+    // windDirText() нь "баруунаас", "хойноос" гэх мэт хэлбэрээр буцаадаг тул
+    // "оос" нэмэлтгүйгээр шууд ашиглана
     const windText = windSpd > 0
-      ? `Салхи ${windDir}оос секундэд <b class="hot">${windSpd.toFixed(0)} метр</b>.`
+      ? `Салхи ${windDir} секундэд <b class="hot">${windSpd.toFixed(0)} метр</b>.`
       : '';
 
-    // Одоо байгаа нөхцлүүдийг цэвэрлэх
+    // Нөхцлийн жагсаалт бүрэн цэвэрлэх (DOM + глобал массив)
+    conditions = [];
     document.getElementById('condRows').innerHTML = '';
     window._condCount = 0;
 
@@ -1549,10 +1556,11 @@ async function fillFromWeatherAPI() {
     const elDay = document.getElementById('o_day');
     const elWeekday = document.getElementById('o_weekday');
     const elYear = document.getElementById('o_year');
-    if (elMonth && !elMonth.value) elMonth.value = month;
-    if (elDay && !elDay.value) elDay.value = day;
-    if (elWeekday && !elWeekday.value) elWeekday.value = weekday + ' ГАРАГ';
-    if (elYear && !elYear.value) elYear.value = `${year} оны ${month} ${day}-ны`;
+    // Автомат татах тул огнооны талбаруудыг заавал шинэчилнэ
+    if (elMonth) elMonth.value = month;
+    if (elDay) elDay.value = day;
+    if (elWeekday) elWeekday.value = weekday + ' ГАРАГ';
+    if (elYear) elYear.value = `${year} оны ${month} ${day}-ны`;
 
     const timeStr = ts.toLocaleTimeString('mn-MN', { hour:'2-digit', minute:'2-digit' });
     status.textContent = `✅ Дархан өртөө — ${temp > 0 ? '+' : ''}${temp.toFixed(1)}°C, ${condition}`;
@@ -1587,7 +1595,7 @@ async function fetchRiverData(){
     renderRiverData(stations);
 
     // Голын мэдээний товчийг нуух
-    if(initBtn) initBtn.style.display = 'none';
+    if(btn) btn.style.display = 'none';
 
   } catch(e) {
     const wrap = document.getElementById('riverStations');
