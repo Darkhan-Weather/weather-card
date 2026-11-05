@@ -734,9 +734,12 @@ function switchPreviewTab(tab){
 // ── SCALE CARD ──
 function scaleCard(){
   const wrap=document.getElementById('igWrap');if(!wrap)return;
-  const w=wrap.offsetWidth;const scale=w/1080;
+  const w=wrap.offsetWidth;
+  // _exportW/_exportH ашиглан аль ч формат дээр зөв масштаблана
+  const srcW=_exportW||1080;const srcH=_exportH||1080;
+  const scale=w/srcW;
   const card=document.querySelector('.ig-card');
-  if(card){card.style.transform=`scale(${scale})`;wrap.style.height=(1080*scale)+'px';}
+  if(card){card.style.transform=`scale(${scale})`;wrap.style.height=(srcH*scale)+'px';}
 }
 window.addEventListener('resize',scaleCard);
 
@@ -980,73 +983,8 @@ function generate1day(){
   if(cityImgData){sp.src=cityImgData;sp.style.display='block';bg.src=cityImgData;bg.style.display='block';}
   else{sp.style.display='none';bg.style.display='none';}
 
-  document.getElementById('result1day').style.display='block';
   setTimeout(()=>{scaleCard();},80);
   updateCaption();
-}
-
-// Export — full 1080×1080 without scaling
-function doInstagramPNG(){
-  const card=document.getElementById('exportTarget1');
-  const wrap=document.getElementById('igWrap');
-
-  // 1. Карт-г дэлгэцийн гадна render container-т хуулж байрлуулна
-  const container=document.createElement('div');
-  container.style.cssText='position:fixed;left:-1200px;top:0;width:1080px;height:1080px;overflow:visible;z-index:-1';
-  document.body.appendChild(container);
-
-  // 2. Карт-г clone хийж, transform-гүй бүтэн хэмжээгээр тавина
-  const clone=card.cloneNode(true);
-  clone.style.cssText='width:1080px;height:1080px;transform:none;position:relative;overflow:hidden';
-  container.appendChild(clone);
-
-  // 3. Зураг src-ийг шилжүүлнэ (clone дотор зургууд хоосон байж болно)
-  const origImgs=card.querySelectorAll('img');
-  const cloneImgs=clone.querySelectorAll('img');
-  origImgs.forEach((img,i)=>{ if(cloneImgs[i]) cloneImgs[i].src=img.src; });
-
-  setTimeout(()=>{
-    html2canvas(clone,{
-      scale:1,
-      useCORS:true,
-      allowTaint:true,
-      width:1080,
-      height:1080,
-      windowWidth:1080,
-      windowHeight:1080,
-      backgroundColor:null,
-      scrollX:0,
-      scrollY:0,
-      logging:false,
-      ignoreElements:(el)=>el.tagName==='SCRIPT'||(el.tagName==='DIV'&&!el.children.length&&!el.textContent.trim()&&el!==clone),
-      onclone:(doc)=>{
-        // ig-card transform арилгах
-        const card=doc.querySelector('.ig-card');
-        if(card){
-          card.style.transform='none';
-          card.style.position='absolute';
-          card.style.top='0px';
-          card.style.left='0px';
-        }
-        // ig-right backdrop-filter
-        doc.querySelectorAll('.ig-right').forEach(el=>{
-          el.style.backdropFilter='none';
-          el.style.webkitBackdropFilter='none';
-          el.style.background='rgba(255,255,255,0.91)';
-        });
-      }
-    }).then(canvas=>{
-      document.body.removeChild(container);
-      const a=document.createElement('a');
-      a.download='weather_instagram_1080x1080.png';
-      a.href=canvas.toDataURL('image/png');
-      a.click();
-    }).catch(err=>{
-      document.body.removeChild(container);
-      console.error('Export error:',err);
-      alert('Export алдаа гарлаа. Дахин оролдоно уу.');
-    });
-  },200);
 }
 
 
@@ -1253,6 +1191,9 @@ function updateTempUI(){
   document.getElementById('tempMinDisplay').textContent = minStr;
   document.getElementById('tempMaxDisplay').textContent = maxStr;
   document.getElementById('o_temp').value = minStr + '...' + maxStr;
+  // Карт дээр шууд live update
+  const tempEl = document.getElementById('o_tempEl');
+  if(tempEl) tempEl.textContent = minStr + '...' + maxStr;
 }
 
 function initTempSlider(){
@@ -1566,6 +1507,9 @@ async function fillFromWeatherAPI() {
     status.textContent = `✅ Дархан өртөө — ${temp > 0 ? '+' : ''}${temp.toFixed(1)}°C, ${condition}`;
     detail.textContent = `Шинэчлэгдсэн: ${timeStr} | Чийгшил: ${d.humidity}% | Даралт: ${d.pressure} hPa | Салхи: ${windSpd} м/с`;
     btn.textContent = '🔄 Шинэчлэх';
+
+    // Өгөгдөл бөглөсний дараа карт автоматаар шинэчлэгдэнэ
+    setTimeout(() => generate1day(), 150);
 
   } catch (e) {
     status.textContent = '❌ Алдаа: ' + e.message;
