@@ -72,26 +72,26 @@ body{font-family:'Roboto',Arial,sans-serif;background:var(--bg-page);min-height:
 /* ── RIVER CARD WIDGET (карт дотор) ── */
 .ig-river-widget{
   margin-top:8px;width:100%;
-  background:rgba(10,30,80,0.55);
-  border:1.5px solid rgba(144,194,249,0.35);
-  border-radius:14px;padding:8px 12px;
+  background:rgba(10,30,80,0.72);
+  border:1.5px solid rgba(144,194,249,0.5);
+  border-radius:14px;padding:12px 14px;
   display:none; /* анхдагч нуусан */
 }
 .ig-river-widget.visible{display:block}
 .ig-river-wlabel{
-  font-size:10px;font-weight:800;color:rgba(144,194,249,0.9);
-  letter-spacing:.6px;text-transform:uppercase;margin-bottom:5px;
+  font-size:14px;font-weight:900;color:#cfe8ff;
+  letter-spacing:.6px;text-transform:uppercase;margin-bottom:8px;
   display:flex;align-items:center;gap:5px
 }
-.ig-river-rows{display:flex;flex-direction:column;gap:4px}
+.ig-river-rows{display:flex;flex-direction:column;gap:8px}
 .ig-river-row{
   display:flex;align-items:center;justify-content:space-between;
   font-size:11px;font-weight:800;
 }
-.ig-river-name{color:rgba(255,255,255,0.75);font-size:10px;font-weight:700;flex:1}
-.ig-river-val{color:#90e0ef;font-size:16px;font-weight:900;line-height:1}
-.ig-river-unit{color:rgba(255,255,255,0.5);font-size:9px;font-weight:700;margin-left:2px}
-.ig-river-status-dot{width:7px;height:7px;border-radius:50%;margin-left:6px;flex-shrink:0}
+.ig-river-name{color:#fff;font-size:16px;font-weight:800;flex:1;text-shadow:0 1px 4px rgba(0,0,0,.4)}
+.ig-river-val{color:#90e0ef;font-size:24px;font-weight:900;line-height:1}
+.ig-river-unit{color:rgba(255,255,255,0.8);font-size:12px;font-weight:700;margin-left:3px}
+.ig-river-status-dot{width:10px;height:10px;border-radius:50%;margin-left:6px;flex-shrink:0}
 .ig-river-status-dot.safe{background:#4ade80}
 .ig-river-status-dot.warn{background:#fbbf24}
 .ig-river-status-dot.danger{background:#f87171}
@@ -560,6 +560,13 @@ input:focus,select:focus{border-color:var(--brand-mid)}
       <div><label>Гараг</label><input type="text" id="o_weekday" placeholder="ПҮРЭВ ГАРАГ"></div>
       <div><label>Жилийн дугаар</label><input type="text" id="o_year" placeholder="2026 оны 5-р сарын 21-ны"></div>
     </div>
+    <div style="margin-top:10px">
+      <label>Мэдээний төрөл</label>
+      <select id="o_fcType" onchange="onFcTypeChange()">
+        <option value="half">Хагас хоног (08:00–20:00)</option>
+        <option value="day">Хоног (өмнөх өдрийн 20:00 – 20:00, шөнө/өдөр)</option>
+      </select>
+    </div>
     <div class="g2" style="margin-top:10px">
       <div>
         <label>Байршил / Сум</label>
@@ -871,8 +878,8 @@ input:focus,select:focus{border-color:var(--brand-mid)}
       <button class="fmt-btn active" id="fmt1080" onclick="setFormat(1080,1080,'weather_1080x1080.png',this)">
         📷 Instagram<br>1080×1080
       </button>
-      <button class="fmt-btn" id="fmt1200" onclick="setFormat(1200,630,'weather_fb_1200x630.png',this)">
-        🖥️ Facebook<br>1200×630
+      <button class="fmt-btn" id="fmt1200" onclick="setFormat(1080,1080,'weather_fb_1200x1200.png',this,1200/1080)">
+        🖥️ Facebook<br>1200×1200
       </button>
     </div>
 
@@ -958,17 +965,18 @@ const SOUM_COORDS={
 let _sunCoords={lat:49.4833,lng:105.9667};
 
 function calcSun(date,lat,lng){
-  const rad=Math.PI/180;
-  const N=Math.floor((date-new Date(date.getFullYear(),0,0))/86400000);
-  const B=(360/365)*(N-81)*rad;
-  const EoT=9.87*Math.sin(2*B)-7.53*Math.cos(B)-1.5*Math.sin(B);
-  const TC=4*(lng-105)+EoT;
-  const decl=23.45*Math.sin(rad*(360/365)*(N-81))*rad;
-  const cosH=(-Math.sin(-0.8333*rad)-Math.sin(lat*rad)*Math.sin(decl))/(Math.cos(lat*rad)*Math.cos(decl));
+  // NOAA-гийн нарны байрлалын алгоритм (алдаа ~1 минут). Монгол улс UTC+8.
+  const rad=Math.PI/180, deg=180/Math.PI;
+  const N=Math.round((new Date(date.getFullYear(),date.getMonth(),date.getDate())-new Date(date.getFullYear(),0,1))/86400000)+1;
+  const g=2*Math.PI/365*(N-1);
+  const eqtime=229.18*(0.000075+0.001868*Math.cos(g)-0.032077*Math.sin(g)-0.014615*Math.cos(2*g)-0.040849*Math.sin(2*g));
+  const decl=0.006918-0.399912*Math.cos(g)+0.070257*Math.sin(g)-0.006758*Math.cos(2*g)+0.000907*Math.sin(2*g)-0.002697*Math.cos(3*g)+0.00148*Math.sin(3*g);
+  const cosH=Math.cos(90.833*rad)/(Math.cos(lat*rad)*Math.cos(decl))-Math.tan(lat*rad)*Math.tan(decl);
   if(Math.abs(cosH)>1)return{rise:'—',set:'—'};
-  const H=Math.acos(cosH)/rad;
-  function fmt(m){m=((m%1440)+1440)%1440;const h=Math.floor(m/60);const mn=Math.floor(m%60);return String(h).padStart(2,'0')+':'+String(mn).padStart(2,'0');}
-  return{rise:fmt(720-4*(lng+H)-TC+480),set:fmt(720-4*(lng-H)-TC+480)};
+  const H=Math.acos(cosH)*deg;
+  const TZ=8*60;
+  function fmt(m){m=Math.round(m);m=((m%1440)+1440)%1440;return String(Math.floor(m/60)).padStart(2,'0')+':'+String(m%60).padStart(2,'0');}
+  return{rise:fmt(720-4*(lng+H)-eqtime+TZ),set:fmt(720-4*(lng-H)-eqtime+TZ)};
 }
 
 function updateBottomRight(alertTxt, sunsetTime){
@@ -1380,11 +1388,70 @@ function applyRandomPalette(forceSeason){
   if(lbl){lbl.textContent='🎨 '+p.label;lbl.style.opacity='1';setTimeout(()=>{lbl.style.opacity='0';},2500);}
 }
 
+
+// ══════════════════════════════════════════
+// МЭДЭЭНИЙ ТӨРӨЛ, ОГНОО, ТЕМПЕРАТУРЫН ТЕКСТ
+// ══════════════════════════════════════════
+function getFcType(){ const el=document.getElementById('o_fcType'); return el?el.value:'half'; }
+function onFcTypeChange(){
+  const isDay=getFcType()==='day';
+  const cb=document.getElementById('toggleDayNight');
+  if(cb) cb.checked=isDay;
+  setDayNightMode(isDay);
+  generate1day();
+}
+// Талбаруудаас мэдээний огноог Date болгох
+function getFcDate(){
+  const ym=(gv('o_year')||'').match(/(\d{4})/);
+  const y=ym?parseInt(ym[1]):new Date().getFullYear();
+  const mi=MN_MONTHS.indexOf(gv('o_month'));
+  const d=parseInt(gv('o_day'));
+  const now=new Date();
+  return new Date(y, mi>=0?mi:now.getMonth(), d||now.getDate());
+}
+// Монгол хэлний харьяалахын нөхцөл: 1,4,9-өөр төгссөн тоо → -ний, бусад → -ны
+function mnGen(n){ return (n%10===1||n%10===4||n%10===9)?'ний':'ны'; }
+function pad2(n){ return String(n).padStart(2,'0'); }
+function buildSubtitle(){
+  const d=getFcDate();
+  if(getFcType()==='day'){
+    const p=new Date(d); p.setDate(d.getDate()-1);
+    const from = p.getMonth()===d.getMonth()
+      ? `${d.getFullYear()} оны ${d.getMonth()+1}-р сарын ${pad2(p.getDate())}-${mnGen(p.getDate())} 20:00-аас ${pad2(d.getDate())}-${mnGen(d.getDate())}`
+      : `${p.getFullYear()} оны ${p.getMonth()+1}-р сарын ${pad2(p.getDate())}-${mnGen(p.getDate())} 20:00-аас ${d.getMonth()+1}-р сарын ${pad2(d.getDate())}-${mnGen(d.getDate())}`;
+    return `${from} <span>20:00 цаг хүртэл</span>`;
+  }
+  const yr=gv('o_year') || `${d.getFullYear()} оны ${d.getMonth()+1}-р сарын ${d.getDate()}-${mnGen(d.getDate())}`;
+  return `${yr} <span>08:00-20:00 цаг хүртэл</span>`;
+}
+// Температурын хүрээ → "-10...-5 градус хүйтэн" (багаас их рүү)
+function tempPhrase(min,max){
+  const lo=Math.min(min,max), hi=Math.max(min,max);
+  const cls = hi<=0 ? 'cold' : 'hot';
+  const adj = hi<=0 ? ' хүйтэн' : lo>=28 ? ' халуун' : lo>=0 ? ' дулаан' : '';
+  return `<b class="${cls}">${fmtT(lo)}...${fmtT(hi)}</b> градус${adj}`;
+}
+function buildTempText(){
+  if(_dayNightMode){
+    return `Шөнөдөө ${tempPhrase(_nightMin,_nightMax)}, өдөртөө ${tempPhrase(_dayMin,_dayMax)} байна.`;
+  }
+  return `Өдөртөө ${tempPhrase(_tempMin,_tempMax)} байна.`;
+}
+// Нөхцлийн жагсаалтын 🌡️ мөрийг slider-ын утгаар шинэчилнэ (байхгүй бол нэмнэ)
+function syncTempCondition(){
+  const txt=buildTempText();
+  let idx=conditions.findIndex(c=>c.icon==='🌡️');
+  if(idx<0){ conditions.push({icon:'🌡️',text:txt}); buildCondRows(); return; }
+  conditions[idx].text=txt;
+  const row=document.querySelectorAll('#condRows .cond-row')[idx];
+  const inp=row&&row.querySelector('input[type=text]');
+  if(inp) inp.value=txt;
+}
+
 // Generate
 function generate1day(){
   // applyRandomPalette() - энд дуудахгүй; зөвхөн анх ачааллах үед болон "🎨 Өнгө солих" дарахад л ажиллана
-  const yr=gv('o_year');
-  document.getElementById('o_subtitleEl').innerHTML=`${yr} <span>08:00-20:00 цаг хүртэл</span>`;
+  document.getElementById('o_subtitleEl').innerHTML=buildSubtitle();
   document.getElementById('o_monthEl').textContent=gv('o_month')||'—';
   document.getElementById('o_dayEl').textContent=gv('o_day')||'—';
   document.getElementById('o_weekdayEl').textContent=gv('o_weekday')||'—';
@@ -1399,6 +1466,7 @@ function generate1day(){
     if(sel&&conditions[i])conditions[i].icon=sel.value;
     if(inp&&conditions[i])conditions[i].text=inp.value;
   });
+  syncTempCondition();
 
   // cond list
   document.getElementById('o_condListEl').innerHTML=conditions.map(c=>`
@@ -1452,9 +1520,9 @@ function generate1day(){
 
 
 // ── FORMAT STATE ──
-let _exportW=1080,_exportH=1080,_exportFile='weather_1080x1080.png';
-function setFormat(w,h,fname,btn){
-  _exportW=w;_exportH=h;_exportFile=fname;
+let _exportW=1080,_exportH=1080,_exportFile='weather_1080x1080.png',_outScale=1;
+function setFormat(w,h,fname,btn,scale){
+  _exportW=w;_exportH=h;_exportFile=fname;_outScale=scale||1;
   document.querySelectorAll('.fmt-btn').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
   // ig-wrap aspect ratio шинэчлэх
@@ -1489,7 +1557,7 @@ function doExport(){
   origImgs.forEach((img,i)=>{if(cloneImgs[i])cloneImgs[i].src=img.src;});
   setTimeout(()=>{
     html2canvas(clone,{
-      scale:1,useCORS:true,allowTaint:true,
+      scale:_outScale,useCORS:true,allowTaint:true,
       width:_exportW,height:_exportH,
       windowWidth:_exportW,windowHeight:_exportH,
       backgroundColor:null,scrollX:0,scrollY:0,logging:false,
@@ -1565,49 +1633,64 @@ function doExport(){
 
 // ── CAPTION ──
 function updateCaption(){
-  const month=gv('o_month')||'';
-  const day=gv('o_day')||'';
-  const weekday=gv('o_weekday')||'';
-  const temp=gv('o_temp')||'';
+  const d=getFcDate();
   const region=gv('o_region')||'Дархан сум орчмоор';
   const alert=gv('o_alert')||'';
-  const condTexts=conditions.map(c=>c.text.replace(/<[^>]+>/g,'')).join(' ');
-  let caption=`🌤️ ЦАГ АГААРЫН УРЬДЧИЛСАН МЭДЭЭ\n`;
-  caption+=`📅 ${month} ${day} (${weekday})\n\n`;
-  caption+=`📍 ${region}\n`;
-  caption+=`${condTexts}\n`;
-  // Өдөр/шөнийн горим идэвхтэй эсэхийг шалгаж температур тусгана
-  if(_dayNightMode){
-    caption+=`🌙 Шөнийн температур: ${fmtT(_nightMin)}...${fmtT(_nightMax)}\n`;
-    caption+=`☀️ Өдрийн температур: ${fmtT(_dayMin)}...${fmtT(_dayMax)}\n`;
-  } else if(temp){
-    caption+=`🌡️ Температур: ${temp}\n`;
+  const wk=(gv('o_weekday')||'').trim();
+  const wkNice=wk? wk.charAt(0)+wk.slice(1).toLowerCase() : '';
+  const strip=t=>(t||'').replace(/<[^>]+>/g,'').trim();
+  const isDay=getFcType()==='day';
+  const dateStr=`${d.getFullYear()}.${pad2(d.getMonth()+1)}.${pad2(d.getDate())}`;
+  let period;
+  if(isDay){ const p=new Date(d); p.setDate(d.getDate()-1); period=`${pad2(p.getMonth()+1)}.${pad2(p.getDate())}-ны 20:00 – ${pad2(d.getMonth()+1)}.${pad2(d.getDate())}-ны 20:00`; }
+  else period='08:00 – 20:00';
+
+  let c=`🌤️ ЦАГ АГААРЫН УРЬДЧИЛСАН МЭДЭЭ\n`;
+  c+=`📅 ${dateStr}${wkNice?' | '+wkNice:''}\n`;
+  c+=`🕗 Хугацаа: ${period}\n`;
+  c+=`📍 ${region}\n\n`;
+  conditions.forEach(x=>{ const t=strip(x.text); if(t) c+=`${x.icon||'•'} ${t}\n`; });
+
+  // Голын түвшин (карт дээр харагдаж байвал)
+  const rw=document.getElementById('o_riverWidget');
+  if(rw && rw.classList.contains('visible')){
+    const rows=[...rw.querySelectorAll('.ig-river-row')].map(r=>{
+      const n=strip(r.querySelector('.ig-river-name')?.textContent);
+      const v=strip(r.querySelector('.ig-river-val')?.textContent).replace(/см$/,' см');
+      return n&&v?`${n} ${v}`:'';
+    }).filter(Boolean);
+    if(rows.length) c+=`💧 Голын усны түвшин: ${rows.join(', ')}\n`;
   }
-  // Голын мэдээ харагдаж байвал caption-д тусгана
-  const riverWidget = document.querySelector('.ig-river-widget');
-  if(riverWidget && riverWidget.style.display !== 'none'){
-    const riverRows = riverWidget.querySelectorAll('.river-row-name, .river-row-level');
-    if(riverRows.length > 0){
-      caption+=`\n💧 ГОЛЫН УСНЫ ТҮВШИН:\n`;
-      const riverNames = riverWidget.querySelectorAll('.river-name');
-      const riverLevels = riverWidget.querySelectorAll('.river-level');
-      for(let i=0;i<riverNames.length;i++){
-        const name=(riverNames[i]?.textContent||'').trim();
-        const level=(riverLevels[i]?.textContent||'').trim();
-        if(name && level) caption+=`${name}: ${level}\n`;
-      }
-    }
-  }
-  if(alert) caption+=`⚠️ ${alert}\n`;
-  caption+=`\n☎️ 70374161\n🌐 darkhan-uul.weather.gov.mn\n#цагагаар #Дархан #УЦУОШТ`;
+  if(alert) c+=`\n⚠️ ${strip(alert)}\n`;
+
+  // Иргэдэд өгөх зөвлөмж (нөхцөл, температур, улирлаас хамаарна)
+  const condList=conditions.map(x=>strip(x.text).toLowerCase());
+  const all=condList.join(' ');
+  // "орохгүй", "үгүй" гэх мэт үгүйсгэлтэй мөрийг тооцохгүй
+  const has=re=>condList.some(t=>re.test(t)&&!/гүй|үгүй/.test(t));
+  const lo=_dayNightMode?Math.min(_nightMin,_dayMin):_tempMin;
+  const hi=_dayNightMode?Math.max(_nightMax,_dayMax):_tempMax;
+  const windMax=Math.max(0,...[...all.matchAll(/(\d+)\s*метр/g)].map(m=>+m[1]));
+  const m=d.getMonth()+1;
+  let tip;
+  if(alert) tip='Аюултай үзэгдлээс сэрэмжилж, мэдээ мэдээллийг тогтмол хүлээн авч байхыг зөвлөж байна.';
+  else if(has(/цас|шуурга|мөндөр/)) tip='Зам гулгаа болох тул жолооч болон явган зорчигчид болгоомжтой зорчино уу.';
+  else if(windMax>=12) tip='Салхи ширүүсэх тул гадаа байгаа эд зүйлсээ бэхэлж, галын аюулаас сэрэмжилнэ үү.';
+  else if(lo<=-20) tip='Хүйтэн тул дулаан хувцаслаж, хүүхэд болон ахмад настнуудыг гадаа удаан байлгахгүй байхыг зөвлөж байна.';
+  else if(hi>=30) tip='Халуун тул ус сайн ууж, үд дундын нарнаас хамгаалаарай.';
+  else if(m>=11||m<=2) tip='Өвлийн улиралд дулаан хувцаслаж, утаа болон хүйтнээс сэргийлээрэй.';
+  else if(m<=5) tip='Хаврын улиралд цаг агаар огцом өөрчлөгддөг тул урьдчилсан мэдээг тогтмол хүлээн аваарай.';
+  else if(m<=8) tip='Аадар бороо, аянга цахилгаанаас сэрэмжлэхийг зөвлөж байна.';
+  else tip='Намрын улиралд өдөр шөнийн температурын зөрүү их тул дулаан хувцаслаарай.';
+  c+=`\n💡 Зөвлөмж: ${tip}\n`;
+
+  const wkTag=wk? ' #'+wk.toLowerCase().split(/\s+/).map(w=>w.charAt(0).toUpperCase()+w.slice(1)).join('') : '';
+  c+=`\n☎️ 70374161 | 🌐 darkhan-uul.weather.gov.mn\n`;
+  c+=`#ЦагАгаар #УрьдчилсанМэдээ #Дархан #ДарханУул #УЦУОШТ${wkTag}`;
+
   const box=document.getElementById('captionBox');
-  if(box){
-    box.textContent=caption;
-    box.style.color='';
-    box.style.fontStyle='';
-    box.style.fontSize='';
-  }
-  return caption;
+  if(box){ box.textContent=c; box.style.color=''; box.style.fontStyle=''; box.style.fontSize=''; }
+  return c;
 }
 
 function copyCaption(){
