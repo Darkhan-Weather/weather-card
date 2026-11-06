@@ -329,6 +329,11 @@ input:focus,select:focus{border-color:var(--brand-mid)}
   box-shadow:0 3px 12px rgba(0,114,187,0.3);transition:all .15s;
 }
 .preview-dl-btn:hover{transform:translateY(-1px)}
+/* Том дэлгэцэнд товчнууд хэт сунахгүй: картын өргөнтэй ойролцоо голлуулна */
+.preview-col .format-bar,.preview-actions{max-width:640px;margin-left:auto;margin-right:auto}
+.btn-p{display:block;max-width:520px;margin-left:auto;margin-right:auto}
+.pal-select{flex:1;padding:0 12px;border-radius:10px;border:none;margin-top:12px;font-family:'Roboto',Arial,sans-serif;font-size:13px;font-weight:700;color:#fff;cursor:pointer;background:linear-gradient(135deg,#6c5ce7,#a29bfe);box-shadow:0 3px 12px rgba(108,92,231,0.3)}
+.pal-select option,.pal-select optgroup{color:#1a2535;background:#fff}
 
 /* ══ INSTAGRAM 1080×1080 ══ */
 .ig-wrap{width:min(600px,94vw);aspect-ratio:1/1;margin:20px auto 0;position:relative}
@@ -533,7 +538,7 @@ input:focus,select:focus{border-color:var(--brand-mid)}
   <div class="toolbar-sep"></div>
   <button class="toolbar-btn success" onclick="saveToHistory()">💾 Хадгалах</button>
   <button class="toolbar-btn" onclick="doExport()">📥 Зураг татах</button>
-  <button class="toolbar-btn" onclick="applyRandomPalette()">🎨 Өнгө солих</button>
+  <button class="toolbar-btn" onclick="applyPaletteChoice((document.getElementById('palSelect')||{}).value||'auto')" title="Сонгосон бүлэг дотроо өөр өнгө">🎨 Өнгө солих</button>
   <div class="toolbar-sep"></div>
   <span id="apiFillStatus" style="font-size:11px;color:var(--text-muted);font-weight:500"></span>
 </div>
@@ -884,9 +889,26 @@ input:focus,select:focus{border-color:var(--brand-mid)}
     </div>
 
     <!-- Download + palette in preview col — same row -->
-    <div style="display:flex;gap:8px;margin-top:4px">
+    <div class="preview-actions" style="display:flex;gap:8px;margin-top:4px">
       <button class="preview-dl-btn" onclick="doExport()" style="flex:1">📥 Зураг татах</button>
-      <button class="preview-dl-btn" onclick="applyRandomPalette()" style="flex:1;background:linear-gradient(135deg,#6c5ce7,#a29bfe);box-shadow:0 3px 12px rgba(108,92,231,0.3)">🎨 Өнгө солих</button>
+      <!-- 6. Өнгөний сонголт: улирал + сэрэмжлүүлэг + санамсаргүй -->
+      <select id="palSelect" class="pal-select" onchange="applyPaletteChoice(this.value)" title="Өнгөний загвар сонгох">
+        <optgroup label="🗓️ Улирал">
+          <option value="auto" selected>🔄 Автомат (сараар)</option>
+          <option value="winter">❄️ Өвөл</option>
+          <option value="spring">🌱 Хавар</option>
+          <option value="summer">☀️ Зун</option>
+          <option value="autumn">🍂 Намар</option>
+        </optgroup>
+        <optgroup label="⚠️ Сэрэмжлүүлэг">
+          <option value="warn_yellow">🟡 Шар (анхааруулга)</option>
+          <option value="warn_orange">🟠 Улбар шар (сэрэмжлүүлэг)</option>
+          <option value="warn_red">🔴 Улаан (аюултай үзэгдэл)</option>
+        </optgroup>
+        <optgroup label="🎲 Бусад">
+          <option value="random">🎲 Санамсаргүй</option>
+        </optgroup>
+      </select>
     </div>
 
     <!-- CAPTION -->
@@ -1372,8 +1394,34 @@ function getSeasonByMonth(monthStr){
   return 'autumn';
 }
 
+// Сэрэмжлүүлгийн 3 түвшний палитр
+const ALERT_PALETTES = {
+  warn_yellow:{bg1:'#3d2c00',bg2:'#5c4300',accent:'#ffd84d',bar1:'#2b1f00',bar2:'#473400',label:'Шар анхааруулга'},
+  warn_orange:{bg1:'#4a1c00',bg2:'#7a2e00',accent:'#ff9f43',bar1:'#331400',bar2:'#5c2300',label:'Улбар шар сэрэмжлүүлэг'},
+  warn_red:   {bg1:'#3d0606',bg2:'#6b0a0a',accent:'#ff6b6b',bar1:'#2a0404',bar2:'#520808',label:'Улаан аюул'},
+};
+function setPalette(p){
+  const rs=document.documentElement.style;
+  rs.setProperty('--pal-bg1',p.bg1);rs.setProperty('--pal-bg2',p.bg2);
+  rs.setProperty('--pal-accent',p.accent);rs.setProperty('--pal-bar1',p.bar1);rs.setProperty('--pal-bar2',p.bar2);
+  const lbl=document.getElementById('palLbl');
+  if(lbl){lbl.textContent='🎨 '+p.label;lbl.style.opacity='1';setTimeout(()=>{lbl.style.opacity='0';},2500);}
+}
+// Цэснээс сонгосон өнгө: улирал → тухайн улирлын дотроос, сэрэмжлүүлэг → тогтмол, random → бүх палитраас
+function applyPaletteChoice(v){
+  if(ALERT_PALETTES[v]) return setPalette(ALERT_PALETTES[v]);
+  if(v==='random') return applyRandomPalette('__all__');
+  if(SEASON_PALETTES[v]) return applyRandomPalette(v);
+  return applyRandomPalette(); // auto: сараар
+}
+
 let _lastPalIdx=-1;
 function applyRandomPalette(forceSeason){
+  if(forceSeason==='__all__'){
+    const all=CH_PALETTES.concat(...Object.values(SEASON_PALETTES));
+    let i; do{i=Math.floor(Math.random()*all.length);}while(i===_lastPalIdx&&all.length>1);
+    _lastPalIdx=i; return setPalette(all[i]);
+  }
   const monthVal = gv('o_month');
   const season = forceSeason || (monthVal ? getSeasonByMonth(monthVal) : null);
   let pool = season ? SEASON_PALETTES[season] : CH_PALETTES;
@@ -1416,10 +1464,9 @@ function buildSubtitle(){
   const d=getFcDate();
   if(getFcType()==='day'){
     const p=new Date(d); p.setDate(d.getDate()-1);
-    const from = p.getMonth()===d.getMonth()
-      ? `${d.getFullYear()} оны ${d.getMonth()+1}-р сарын ${pad2(p.getDate())}-${mnGen(p.getDate())} 20:00-аас ${pad2(d.getDate())}-${mnGen(d.getDate())}`
-      : `${p.getFullYear()} оны ${p.getMonth()+1}-р сарын ${pad2(p.getDate())}-${mnGen(p.getDate())} 20:00-аас ${d.getMonth()+1}-р сарын ${pad2(d.getDate())}-${mnGen(d.getDate())}`;
-    return `${from} <span>20:00 цаг хүртэл</span>`;
+    if(p.getMonth()===d.getMonth())
+      return `${d.getFullYear()} оны ${d.getMonth()+1}-р сарын <span>${pad2(p.getDate())}-${mnGen(p.getDate())} 20:00-аас ${pad2(d.getDate())}-${mnGen(d.getDate())} 20:00 цаг хүртэл</span>`;
+    return `${p.getFullYear()} оны <span>${p.getMonth()+1}-р сарын ${pad2(p.getDate())}-${mnGen(p.getDate())} 20:00-аас ${d.getMonth()+1}-р сарын ${pad2(d.getDate())}-${mnGen(d.getDate())} 20:00 цаг хүртэл</span>`;
   }
   const yr=gv('o_year') || `${d.getFullYear()} оны ${d.getMonth()+1}-р сарын ${d.getDate()}-${mnGen(d.getDate())}`;
   return `${yr} <span>08:00-20:00 цаг хүртэл</span>`;
@@ -1429,7 +1476,7 @@ function tempPhrase(min,max){
   const lo=Math.min(min,max), hi=Math.max(min,max);
   const cls = hi<=0 ? 'cold' : 'hot';
   const adj = hi<=0 ? ' хүйтэн' : lo>=28 ? ' халуун' : lo>=0 ? ' дулаан' : '';
-  return `<b class="${cls}">${fmtT(lo)}...${fmtT(hi)}</b> градус${adj}`;
+  return `<b class="${cls}">${tempRangeStr(lo,hi)}</b> градус${adj}`;
 }
 function buildTempText(){
   if(_dayNightMode){
@@ -1440,10 +1487,16 @@ function buildTempText(){
 // Нөхцлийн жагсаалтын 🌡️ мөрийг slider-ын утгаар шинэчилнэ (байхгүй бол нэмнэ)
 function syncTempCondition(){
   const txt=buildTempText();
-  let idx=conditions.findIndex(c=>c.icon==='🌡️');
-  if(idx<0){ conditions.push({icon:'🌡️',text:txt}); buildCondRows(); return; }
-  conditions[idx].text=txt;
-  const row=document.querySelectorAll('#condRows .cond-row')[idx];
+  // Температурын мөр: 🌡️ дүрстэй эсвэл "Өдөртөө/Шөнөдөө ... градус" гэсэн мөр
+  const isTempRow=c=>c.icon==='🌡️'||/^(Өдөртөө|Шөнөдөө)[\s\S]*градус/.test((c.text||'').replace(/<[^>]+>/g,''));
+  const first=conditions.findIndex(isTempRow);
+  const before=conditions.length;
+  // Эхнийхээс бусад температурын мөрийг (давхардлыг) хасна
+  conditions=conditions.filter((c,i)=>i===first||!isTempRow(c));
+  if(first<0){ conditions.push({icon:'🌡️',text:txt}); }
+  else { conditions[first].icon='🌡️'; conditions[first].text=txt; }
+  if(first<0||conditions.length!==before){ buildCondRows(); return; }
+  const row=document.querySelectorAll('#condRows .cond-row')[first];
   const inp=row&&row.querySelector('input[type=text]');
   if(inp) inp.value=txt;
 }
@@ -1801,6 +1854,13 @@ const TEMP_RANGE_MIN = -20, TEMP_RANGE_MAX = 40;
 function tempToPercent(v){ return (v - TEMP_RANGE_MIN) / (TEMP_RANGE_MAX - TEMP_RANGE_MIN) * 100; }
 function percentToTemp(p){ return Math.round(p / 100 * (TEMP_RANGE_MAX - TEMP_RANGE_MIN) + TEMP_RANGE_MIN); }
 function fmtT(v){ return (v >= 0 ? '+' : '') + v; }
+// Температурын хүрээг албан мэдээний хэлбэрээр: хасах утгад -5...-10, нэмэх утгад +5...+10,
+// тэгийг дайрсан үед -2...+3 (үнэмлэхүй хэмжээ багаас их рүү)
+function tempRangeStr(a,b){
+  const lo=Math.min(a,b), hi=Math.max(a,b);
+  if(hi<=0) return fmtT(hi)+'...'+fmtT(lo);
+  return fmtT(lo)+'...'+fmtT(hi);
+}
 
 function updateTempUI(){
   const minP = tempToPercent(_tempMin);
@@ -1817,7 +1877,7 @@ function updateTempUI(){
   // Карт дээр шууд live update + өнгө (хүйтэн/дулаан)
   const tempEl = document.getElementById('o_tempEl');
   if(tempEl){
-    tempEl.textContent = minStr + '...' + maxStr;
+    tempEl.textContent = tempRangeStr(_tempMin,_tempMax);
     const avg = (_tempMin + _tempMax) / 2;
     tempEl.style.color = avg < 0 ? '#38bdf8' : avg < 15 ? '#ffd84d' : '#fb923c';
   }
@@ -1858,8 +1918,8 @@ function updateDayNightCardUI(){
   const nightVal = document.getElementById('o_tempNightVal');
   const dayVal   = document.getElementById('o_tempDayVal');
   if(!nightVal || !dayVal) return;
-  const nStr = fmtT(_nightMin) + '...' + fmtT(_nightMax);
-  const dStr = fmtT(_dayMin)   + '...' + fmtT(_dayMax);
+  const nStr = tempRangeStr(_nightMin,_nightMax);
+  const dStr = tempRangeStr(_dayMin,_dayMax);
   nightVal.textContent = nStr;
   dayVal.textContent   = dStr;
   nightVal.style.color = _nightMin < 0 ? '#38bdf8' : '#ffd84d';
@@ -2219,23 +2279,9 @@ async function fillFromWeatherAPI() {
     const condition = d.condition || 'Цэлмэг';
     const ts = new Date(d.timestamp);
 
-    // Температур slider-д тохируулах (min=temp-2, max=temp+2 гэсэн байдлаар)
-    const tMin = Math.round(temp - 2);
-    const tMax = Math.round(temp + 2);
-    setTempRange(tMin, tMax);
-
-    // Өдөр/шөнийн горим идэвхтэй байвал тухайн slider-уудыг ч шинэчилнэ
-    if (_dayNightMode) {
-      // Шөнийн температур: API утгаас 4-7 градус доогуур
-      _nightMin = Math.round(temp - 7);
-      _nightMax = Math.round(temp - 4);
-      // Өдрийн температур: API утгаас ойролцоо (±2)
-      _dayMin = tMin;
-      _dayMax = tMax;
-      updateNightSliderUI();
-      updateDaySliderUI();
-      updateDayNightCardUI();
-    }
+    // АНХААР: Энэ API нь ОДООГИЙН бодит хэмжилт буцаадаг (урьдчилсан мэдээ биш).
+    // Тиймээс температурын slider-ийг автоматаар өөрчлөхгүй — урьдчилсан мэдээний
+    // температурыг инженер slider-аар өөрөө тохируулна.
 
     // Нөхцлийн мөр нэмэх
     const cond = CONDITION_MAP[condition] || { icon: '⛅', text: condition + '.' };
@@ -2295,7 +2341,7 @@ async function fillFromWeatherAPI() {
     if (elYear) elYear.value = `${year} оны ${month} ${day}-ны`;
 
     const timeStr = ts.toLocaleTimeString('mn-MN', { hour:'2-digit', minute:'2-digit' });
-    status.textContent = `✅ Дархан өртөө — ${temp > 0 ? '+' : ''}${temp.toFixed(1)}°C, ${condition}`;
+    status.textContent = `✅ Одоогийн хэмжилт: ${temp > 0 ? '+' : ''}${temp.toFixed(1)}°C, ${condition} — температурыг slider-аар тохируулна уу`;
     detail.textContent = `Шинэчлэгдсэн: ${timeStr} | Чийгшил: ${d.humidity}% | Даралт: ${d.pressure} hPa | Салхи: ${windSpd} м/с`;
     btn.textContent = '🔄 Шинэчлэх';
 
