@@ -1501,6 +1501,28 @@ function doExport(){
           el.style.backdropFilter='none';el.style.webkitBackdropFilter='none';
           el.style.background='rgba(255,255,255,0.91)';
         });
+        // Баруун самбар: html2canvas сүүдрийг хагас тунгалаг дэвсгэрийн доор зурж саарал болгодог → хасна
+        doc.querySelectorAll('.ig-right').forEach(el=>{ el.style.boxShadow='none'; });
+        // Лого: html2canvas нь object-fit:contain-г дэмждэггүй тул зургийг сунгадаг → харьцааг гараар тооцоолно
+        doc.querySelectorAll('.ig-logo img').forEach(img=>{
+          const nw=img.naturalWidth, nh=img.naturalHeight;
+          if(!nw||!nh) return;
+          const cs=doc.defaultView.getComputedStyle(img);
+          const cw=img.clientWidth-parseFloat(cs.paddingLeft)-parseFloat(cs.paddingRight);
+          const ch=img.clientHeight-parseFloat(cs.paddingTop)-parseFloat(cs.paddingBottom);
+          const s=Math.min(cw/nw, ch/nh);
+          img.style.padding='0';
+          img.style.objectFit='fill';
+          img.style.width=(nw*s)+'px';
+          img.style.height=(nh*s)+'px';
+        });
+        // Огнооны тоо: line-height < 1 үед html2canvas текстийг дээш шилжүүлдэг → 1 болгоод зайг margin-аар нөхнө
+        doc.querySelectorAll('.ig-day').forEach(el=>{
+          const fs=parseFloat(doc.defaultView.getComputedStyle(el).fontSize);
+          const d=fs*(1-0.92)/2;
+          el.style.lineHeight='1';
+          el.style.margin=`-${d}px 0`;
+        });
         // html2canvas нь дугуй булантай сүүдрийг буруу зурдаг → экспортод сүүдрийг хасна
         doc.querySelectorAll('.ig-glass-date, .ig-temp, .ig-temp-day, .ig-temp-night, .ig-river-widget').forEach(el=>{
           el.style.boxShadow='none';
