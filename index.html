@@ -1501,6 +1501,12 @@ function doExport(){
           el.style.backdropFilter='none';el.style.webkitBackdropFilter='none';
           el.style.background='rgba(255,255,255,0.91)';
         });
+        // html2canvas нь дугуй булантай сүүдрийг буруу зурдаг → экспортод сүүдрийг хасна
+        doc.querySelectorAll('.ig-glass-date, .ig-temp, .ig-temp-day, .ig-temp-night, .ig-river-widget').forEach(el=>{
+          el.style.boxShadow='none';
+          // Сүүдэр хасагдсан тул хүрээг бага зэрэг тодруулж гүнзгийрүүлсэн мэдрэмжийг хадгална
+          el.style.border='1.5px solid rgba(255,255,255,0.32)';
+        });
       }
     }).then(canvas=>{
       document.body.removeChild(container);
