@@ -356,7 +356,7 @@ input:focus,select:focus{border-color:var(--brand-mid)}
   box-shadow:0 4px 24px rgba(0,0,0,0.35),0 0 0 2px rgba(255,255,255,0.2);
   flex-shrink:0;overflow:hidden;
 }
-.ig-logo img{width:86px;height:86px;object-fit:contain;padding:6px}
+.ig-logo img{width:100%;height:100%;object-fit:contain;padding:0}
 .ig-title-block{flex:1}
 .ig-maintitle{font-size:36px;font-weight:900;color:#fff;letter-spacing:1.5px;text-shadow:0 2px 14px rgba(0,0,0,.5);line-height:1.05}
 .ig-subtitle{font-size:15px;color:rgba(255,255,255,.8);font-weight:700;margin-top:7px}
@@ -382,7 +382,7 @@ input:focus,select:focus{border-color:var(--brand-mid)}
   box-shadow:0 6px 28px rgba(0,0,0,0.35),inset 0 1px 0 rgba(255,255,255,0.15);
 }
 .ig-month{font-size:15px;font-weight:700;color:rgba(255,255,255,.75);letter-spacing:2px;text-transform:uppercase}
-.ig-day{font-size:108px;font-weight:900;color:#fff;line-height:.92;text-shadow:0 6px 30px rgba(0,0,0,.5)}
+.ig-day{font-family:'Roboto Condensed',Arial,sans-serif;font-size:108px;font-weight:900;color:#fff;line-height:.92;text-shadow:0 6px 30px rgba(0,0,0,.5)}
 .ig-weekday{font-size:18px;font-weight:900;color:var(--pal-accent);letter-spacing:2px;text-transform:uppercase;margin-top:10px}
 .ig-temp{font-size:46px;font-weight:900;color:var(--pal-accent);text-shadow:0 3px 16px rgba(0,0,0,.4);line-height:1.1;text-align:center;width:100%;background:rgba(15,35,75,0.55);border:1.5px solid rgba(255,255,255,0.25);border-radius:18px;padding:14px 16px;box-shadow:0 6px 28px rgba(0,0,0,0.35),inset 0 1px 0 rgba(255,255,255,0.15);}
 
@@ -461,7 +461,7 @@ input:focus,select:focus{border-color:var(--brand-mid)}
 /* FACEBOOK MODE — 1200×630 */
 .ig-card.fb-mode .ig-topbar{height:76px;padding:0 28px}
 .ig-card.fb-mode .ig-logo{width:56px;height:56px}
-.ig-card.fb-mode .ig-logo img{width:52px;height:52px}
+.ig-card.fb-mode .ig-logo img{width:100%;height:100%}
 .ig-card.fb-mode .ig-maintitle{font-size:22px}
 .ig-card.fb-mode .ig-subtitle{font-size:11px;margin-top:3px}
 .ig-card.fb-mode .ig-body{top:76px;bottom:60px;grid-template-columns:210px 1fr}
@@ -1516,12 +1516,32 @@ function doExport(){
           img.style.width=(nw*s)+'px';
           img.style.height=(nh*s)+'px';
         });
-        // Огнооны тоо: line-height < 1 үед html2canvas текстийг дээш шилжүүлдэг → 1 болгоод зайг margin-аар нөхнө
+        // Лого: дугуй хэлбэртэй элементийн сүүдрийг html2canvas цагаан дэвсгэр дээр зурж саарал болгодог → хасна
+        doc.querySelectorAll('.ig-logo').forEach(el=>{ el.style.boxShadow='none'; });
+        // Огнооны тоо: html2canvas текстийн босоо байрлалыг фонт/үйлдлийн системээс хамааран буруу тооцоолдог.
+        // Тиймээс тоог өөрсдөө canvas дээр зурж, элементийн яг төвд нь зураг болгон байрлуулна.
         doc.querySelectorAll('.ig-day').forEach(el=>{
-          const fs=parseFloat(doc.defaultView.getComputedStyle(el).fontSize);
-          const d=fs*(1-0.92)/2;
-          el.style.lineHeight='1';
-          el.style.margin=`-${d}px 0`;
+          const txt=(el.textContent||'').trim();
+          if(!txt) return;
+          const cs=doc.defaultView.getComputedStyle(el);
+          const w=el.clientWidth, h=el.clientHeight, k=2; // k=2: зургийн нягтаршил
+          const cv=document.createElement('canvas');
+          cv.width=w*k; cv.height=h*k;
+          const ctx=cv.getContext('2d');
+          ctx.scale(k,k);
+          ctx.font=`${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`;
+          ctx.fillStyle=cs.color;
+          ctx.textAlign='center';
+          ctx.textBaseline='alphabetic';
+          const m=ctx.measureText(txt);
+          const y=h/2+(m.actualBoundingBoxAscent-m.actualBoundingBoxDescent)/2;
+          ctx.shadowColor='rgba(0,0,0,0.5)'; ctx.shadowOffsetY=6; ctx.shadowBlur=30;
+          ctx.fillText(txt,w/2,y);
+          const img=doc.createElement('img');
+          img.src=cv.toDataURL('image/png');
+          img.style.cssText=`display:block;width:${w}px;height:${h}px;margin:0 auto`;
+          el.textContent='';
+          el.appendChild(img);
         });
         // html2canvas нь дугуй булантай сүүдрийг буруу зурдаг → экспортод сүүдрийг хасна
         doc.querySelectorAll('.ig-glass-date, .ig-temp, .ig-temp-day, .ig-temp-night, .ig-river-widget').forEach(el=>{
