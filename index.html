@@ -592,7 +592,7 @@ input:focus,select:focus{border-color:var(--brand-mid)}
           ☀️🌙 Өдөр / шөнийн температур ялгаж харуулах
         </label>
         <!-- Өдөр/шөнийн тусдаа slider (checkbox идэвхтэй үед харагдана) -->
-        <div id="dayNightSliders" style="display:none;margin-top:10px;display:none;flex-direction:column;gap:8px">
+        <div id="dayNightSliders" style="display:none;margin-top:10px;flex-direction:column;gap:8px">
           <!-- Шөнийн slider -->
           <div>
             <div style="font-size:11px;font-weight:700;color:#38bdf8;margin-bottom:4px">🌙 Шөнийн температур:
@@ -1382,7 +1382,7 @@ function applyRandomPalette(forceSeason){
 
 // Generate
 function generate1day(){
-  applyRandomPalette();
+  // applyRandomPalette() - энд дуудахгүй; зөвхөн анх ачааллах үед болон "🎨 Өнгө солих" дарахад л ажиллана
   const yr=gv('o_year');
   document.getElementById('o_subtitleEl').innerHTML=`${yr} <span>08:00-20:00 цаг хүртэл</span>`;
   document.getElementById('o_monthEl').textContent=gv('o_month')||'—';
@@ -1528,7 +1528,28 @@ function updateCaption(){
   caption+=`📅 ${month} ${day} (${weekday})\n\n`;
   caption+=`📍 ${region}\n`;
   caption+=`${condTexts}\n`;
-  if(temp) caption+=`🌡️ Температур: ${temp}\n`;
+  // Өдөр/шөнийн горим идэвхтэй эсэхийг шалгаж температур тусгана
+  if(_dayNightMode){
+    caption+=`🌙 Шөнийн температур: ${fmtT(_nightMin)}...${fmtT(_nightMax)}\n`;
+    caption+=`☀️ Өдрийн температур: ${fmtT(_dayMin)}...${fmtT(_dayMax)}\n`;
+  } else if(temp){
+    caption+=`🌡️ Температур: ${temp}\n`;
+  }
+  // Голын мэдээ харагдаж байвал caption-д тусгана
+  const riverWidget = document.querySelector('.ig-river-widget');
+  if(riverWidget && riverWidget.style.display !== 'none'){
+    const riverRows = riverWidget.querySelectorAll('.river-row-name, .river-row-level');
+    if(riverRows.length > 0){
+      caption+=`\n💧 ГОЛЫН УСНЫ ТҮВШИН:\n`;
+      const riverNames = riverWidget.querySelectorAll('.river-name');
+      const riverLevels = riverWidget.querySelectorAll('.river-level');
+      for(let i=0;i<riverNames.length;i++){
+        const name=(riverNames[i]?.textContent||'').trim();
+        const level=(riverLevels[i]?.textContent||'').trim();
+        if(name && level) caption+=`${name}: ${level}\n`;
+      }
+    }
+  }
   if(alert) caption+=`⚠️ ${alert}\n`;
   caption+=`\n☎️ 70374161\n🌐 darkhan-uul.weather.gov.mn\n#цагагаар #Дархан #УЦУОШТ`;
   const box=document.getElementById('captionBox');
@@ -2071,6 +2092,19 @@ async function fillFromWeatherAPI() {
     const tMin = Math.round(temp - 2);
     const tMax = Math.round(temp + 2);
     setTempRange(tMin, tMax);
+
+    // Өдөр/шөнийн горим идэвхтэй байвал тухайн slider-уудыг ч шинэчилнэ
+    if (_dayNightMode) {
+      // Шөнийн температур: API утгаас 4-7 градус доогуур
+      _nightMin = Math.round(temp - 7);
+      _nightMax = Math.round(temp - 4);
+      // Өдрийн температур: API утгаас ойролцоо (±2)
+      _dayMin = tMin;
+      _dayMax = tMax;
+      updateNightSliderUI();
+      updateDaySliderUI();
+      updateDayNightCardUI();
+    }
 
     // Нөхцлийн мөр нэмэх
     const cond = CONDITION_MAP[condition] || { icon: '⛅', text: condition + '.' };
